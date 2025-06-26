@@ -16,6 +16,7 @@ from report_generator import ReportGenerator
 from translations import get_translations, get_language_name
 from rag_system import RAGSystem
 from huggingface_client import HuggingFaceClient
+from translator import translator
 
 # Initialize FastAPI app
 app = FastAPI(title="GraviLog - Smart Risk Analysis Agent", version="1.0.0")
@@ -231,11 +232,17 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
         session["completed"] = True
         session["phase"] = "completed"
         
+        # Translate Arabic responses to English for accurate risk assessment
+        translated_responses = translator.translate_responses_for_assessment(
+            session["user_responses"], 
+            session["language"]
+        )
+        
         # Perform risk assessment using RAG + HuggingFace with patient context
         patient_context = f"Patient: {session['patient_info']['name']}, Age: {session['patient_info']['age']}, Pregnancy Week: {session['patient_info']['pregnancy_week']}"
         risk_assessment = await analyze_risk_with_rag(
-            [patient_context] + session["user_responses"],
-            session["language"]
+            [patient_context] + translated_responses,
+            'en'  # Always use English for risk assessment
         )
         # Add pregnancy week-specific risk factors
         risk_assessment = enhance_risk_assessment_with_pregnancy_week(

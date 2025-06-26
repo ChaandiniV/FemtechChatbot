@@ -9,6 +9,9 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from translator import translator
 
 class ReportGenerator:
     def __init__(self):
@@ -18,6 +21,15 @@ class ReportGenerator:
     def setup_custom_styles(self):
         """Setup custom styles for the report"""
         
+        # Try to register Arabic font (fallback if not available)
+        try:
+            # Register Arabic font if available
+            pdfmetrics.registerFont(TTFont('Arabic', 'NotoSansArabic-Regular.ttf'))
+            arabic_font = 'Arabic'
+        except:
+            # Fallback to Helvetica which supports Unicode
+            arabic_font = 'Helvetica'
+        
         # Custom title style
         self.styles.add(ParagraphStyle(
             name='CustomTitle',
@@ -25,7 +37,8 @@ class ReportGenerator:
             fontSize=18,
             spaceAfter=30,
             alignment=TA_CENTER,
-            textColor=colors.darkblue
+            textColor=colors.darkblue,
+            fontName=arabic_font
         ))
         
         # Risk level styles
@@ -73,8 +86,14 @@ class ReportGenerator:
         # Build report content
         story = []
         
-        # Title
-        title_text = "Electronic Medical Record - Pregnancy Risk Assessment" if report_data['language'] == 'en' else "السجل الطبي الإلكتروني - تقييم مخاطر الحمل"
+        # Title with proper Arabic handling
+        if report_data['language'] == 'ar':
+            title_text = "السجل الطبي الإلكتروني - تقييم مخاطر الحمل"
+            # Use HTML encoding for Arabic text in PDF
+            title_text = f'<font name="Helvetica">{title_text}</font>'
+        else:
+            title_text = "Electronic Medical Record - Pregnancy Risk Assessment"
+        
         title = Paragraph(title_text, self.styles['CustomTitle'])
         story.append(title)
         story.append(Spacer(1, 12))
@@ -132,10 +151,16 @@ class ReportGenerator:
         story.append(risk_level_para)
         story.append(Spacer(1, 12))
         
-        # Explanation
+        # Explanation with translation
         explanation_title = "Explanation:" if report_data['language'] == 'en' else "التفسير:"
         story.append(Paragraph(explanation_title, self.styles['Heading3']))
-        story.append(Paragraph(risk_assessment['explanation'], self.styles['Normal']))
+        
+        explanation_text = risk_assessment['explanation']
+        if report_data['language'] == 'ar':
+            # Translate explanation to Arabic
+            explanation_text = translator.translate_english_to_arabic(explanation_text)
+        
+        story.append(Paragraph(explanation_text, self.styles['Normal']))
         story.append(Spacer(1, 12))
         
         # Pregnancy Week Analysis
@@ -172,10 +197,16 @@ class ReportGenerator:
         
         story.append(Spacer(1, 15))
         
-        # Recommendations
+        # Recommendations with translation
         recommendations_title = "Clinical Recommendations:" if report_data['language'] == 'en' else "التوصيات السريرية:"
         story.append(Paragraph(recommendations_title, self.styles['Heading3']))
-        story.append(Paragraph(risk_assessment['recommendations'], self.styles['Normal']))
+        
+        recommendations_text = risk_assessment['recommendations']
+        if report_data['language'] == 'ar':
+            # Translate recommendations to Arabic
+            recommendations_text = translator.translate_english_to_arabic(recommendations_text)
+        
+        story.append(Paragraph(recommendations_text, self.styles['Normal']))
         story.append(Spacer(1, 15))
         
         # Next Steps
