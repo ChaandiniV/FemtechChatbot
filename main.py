@@ -57,6 +57,7 @@ async def start_session(language: str = Form(...)):
     session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
     
     sessions[session_id] = {
+        "session_id": session_id,
         "language": language,
         "phase": "patient_info",  # patient_info -> medical_questions -> completed
         "patient_info": {
@@ -145,6 +146,10 @@ async def get_current_question(session_id: str):
     session = sessions[session_id]
     translations = get_translations(session["language"])
     
+    # Check if assessment is already completed
+    if session["phase"] == "completed" or session.get("completed", False):
+        return {"completed": True, "message": "Assessment completed"}
+    
     # Handle patient info phase
     if session["phase"] == "patient_info":
         current_step = session["current_patient_info_step"]
@@ -223,6 +228,7 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
     # Check if assessment is complete
     if session["current_question_index"] >= len(session["questions_asked"]) or len(session["user_responses"]) >= 5:
         session["completed"] = True
+        session["phase"] = "completed"
         
         # Perform risk assessment using RAG + HuggingFace with patient context
         patient_context = f"Patient: {session['patient_info']['name']}, Age: {session['patient_info']['age']}, Pregnancy Week: {session['patient_info']['pregnancy_week']}"

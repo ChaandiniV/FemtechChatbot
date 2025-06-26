@@ -270,13 +270,13 @@
             
             <div class="questions-responses">
                 <h3>{{ translations.previous_responses }}</h3>
-                {% for question, response in zip(session.questions_asked, session.user_responses) %}
+                {% for i in range(session.questions_asked|length) %}
                 <div class="qa-item">
                     <div class="qa-question" {% if session.language == 'ar' %}class="arabic"{% endif %}>
-                        Q{{ loop.index }}: {{ question }}
+                        Q{{ i + 1 }}: {{ session.questions_asked[i] }}
                     </div>
                     <div class="qa-answer" {% if session.language == 'ar' %}class="arabic"{% endif %}>
-                        A: {{ response }}
+                        A: {{ session.user_responses[i] }}
                     </div>
                 </div>
                 {% endfor %}
@@ -312,7 +312,7 @@
     </div>
 
     <script>
-        const sessionId = '{{ session.session_id if session.session_id else "" }}';
+        const sessionId = '{{ session.session_id }}';
         
         async function generateReport() {
             const btn = document.getElementById('generate-btn');
@@ -331,17 +331,28 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `pregnancy_risk_report_${sessionId}.pdf`;
+                    a.download = `EMR_Report_${sessionId}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
+                    
+                    // Show success message
+                    const language = '{{ session.language }}';
+                    const successMsg = language === 'ar' ? 'تم تحميل التقرير بنجاح' : 'Report downloaded successfully';
+                    alert(successMsg);
                 } else {
-                    alert('Error generating report. Please try again.');
+                    const errorText = await response.text();
+                    console.error('Server response:', errorText);
+                    const language = '{{ session.language }}';
+                    const errorMsg = language === 'ar' ? 'خطأ في إنشاء التقرير. يرجى المحاولة مرة أخرى.' : 'Error generating report. Please try again.';
+                    alert(errorMsg);
                 }
             } catch (error) {
                 console.error('Error generating report:', error);
-                alert('Error generating report. Please try again.');
+                const language = '{{ session.language }}';
+                const errorMsg = language === 'ar' ? 'خطأ في الاتصال. يرجى المحاولة مرة أخرى.' : 'Connection error. Please try again.';
+                alert(errorMsg);
             } finally {
                 btn.disabled = false;
                 loading.style.display = 'none';
