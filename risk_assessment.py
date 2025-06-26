@@ -13,6 +13,14 @@ class RiskAssessment:
         # Combine all responses into a single text for analysis
         combined_text = ' '.join(responses).lower()
         
+        # Debug: Print combined text for Arabic debugging
+        if language == 'ar':
+            print(f"=== ARABIC RISK ASSESSMENT DEBUG ===")
+            print(f"Combined text: {combined_text}")
+            print(f"Number of responses: {len(responses)}")
+            print(f"Responses: {responses}")
+            print(f"Language: {language}")
+        
         # Initialize risk score
         risk_score = 0
         risk_factors = []
@@ -31,7 +39,8 @@ class RiskAssessment:
             medium_risk_keywords = [
                 'قيء', 'ضغط الدم', 'تورم', 'صداع', 'نزيف', 'حركة قليلة',
                 'ألم', 'إفرازات', 'غثيان', 'دوخة', 'تعب شديد',
-                'نعم', 'أعاني', 'أشعر', 'لاحظت', 'عندي'
+                'نعم', 'أعاني', 'أشعر', 'لاحظت', 'عندي', 'موجود',
+                'يوجد', 'احس', 'اشعر', 'اعاني', 'لاحظت'
             ]
             
             # Low-risk indicators in Arabic (score +1 each)
@@ -65,16 +74,26 @@ class RiskAssessment:
             if keyword in combined_text:
                 risk_score += 3
                 risk_factors.append(keyword)
+                if language == 'ar':
+                    print(f"Found high-risk Arabic keyword: {keyword}")
         
         for keyword in medium_risk_keywords:
             if keyword in combined_text and keyword not in ' '.join(risk_factors):
                 risk_score += 2
                 risk_factors.append(keyword)
+                if language == 'ar':
+                    print(f"Found medium-risk Arabic keyword: {keyword}")
         
         for keyword in low_risk_keywords:
             if keyword in combined_text and keyword not in ' '.join(risk_factors):
                 risk_score += 1
                 risk_factors.append(keyword)
+        
+        # Debug: Print final risk calculation
+        if language == 'ar':
+            print(f"Final risk score: {risk_score}")
+            print(f"Risk factors found: {risk_factors}")
+            print(f"=== END DEBUG ===")
         
         # Determine risk level based on score
         if risk_score >= 6:

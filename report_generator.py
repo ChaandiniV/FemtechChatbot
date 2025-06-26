@@ -116,7 +116,18 @@ class ReportGenerator:
             'Low': 'LowRisk'
         }
         
-        risk_level_text = f"Risk Level: {risk_level}" if report_data['language'] == 'en' else f"مستوى الخطورة: {risk_level}"
+        # Translate risk level to Arabic
+        risk_level_arabic = {
+            'High': 'عالي',
+            'Medium': 'متوسط', 
+            'Low': 'منخفض'
+        }
+        
+        if report_data['language'] == 'ar':
+            risk_level_display = risk_level_arabic.get(risk_level, risk_level)
+            risk_level_text = f"مستوى الخطورة: {risk_level_display}"
+        else:
+            risk_level_text = f"Risk Level: {risk_level}"
         risk_level_para = Paragraph(risk_level_text, self.styles[risk_style_map[risk_level]])
         story.append(risk_level_para)
         story.append(Spacer(1, 12))
