@@ -108,10 +108,43 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 - **Error Handling**: Graceful fallback to template-based questions and rule-based assessment
 - **Performance**: Asynchronous FastAPI endpoints for optimal response times
 
+## Deployment Options
+
+### Production Deployment (Recommended)
+- **Platform**: Replit Autoscale Deployment
+- **Features**: Full AI-powered risk assessment, PDF generation, bilingual support
+- **Setup**: Click "Deploy" button in Replit interface
+- **URL**: Will be provided as `https://yourapp.replit.app`
+
+### Static Deployment Alternative
+- **Platform**: Netlify/GitHub Pages compatible
+- **File**: `netlify_version.html` (standalone HTML)
+- **Features**: Basic rule-based assessment, bilingual UI
+- **Limitations**: No AI features, no PDF generation
+
+## Recent Fixes (June 26, 2025)
+
+### Arabic Language Support
+- ✅ Fixed Arabic risk assessment with bilingual keyword matching
+- ✅ Enhanced Arabic UI with proper placeholder translations
+- ✅ Improved Arabic text processing for accurate risk detection
+- ✅ Added comprehensive Arabic medical terminology
+
+### Question System Improvements
+- ✅ Resolved question repetition issues with proper tracking
+- ✅ Enhanced fallback question pool with 12 unique medical questions
+- ✅ Improved session management to prevent API error loops
+
+### Deployment Preparation
+- ✅ Created static HTML version for Netlify deployment
+- ✅ Prepared comprehensive deployment guide
+- ✅ Configured both full-featured and basic deployment options
+
 ## Changelog
 
 - June 26, 2025: Initial setup with Streamlit and OpenAI integration
 - June 26, 2025: Major architecture migration to FastAPI + Hugging Face + RAG system
+- June 26, 2025: Fixed Arabic language processing and created deployment options
 
 ## User Preferences
 
