@@ -1,7 +1,7 @@
 import io
 import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, List
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -74,7 +74,7 @@ class ReportGenerator:
         story = []
         
         # Title
-        title_text = "Pregnancy Risk Assessment Report" if report_data['language'] == 'en' else "تقرير تقييم مخاطر الحمل"
+        title_text = "Electronic Medical Record - Pregnancy Risk Assessment" if report_data['language'] == 'en' else "السجل الطبي الإلكتروني - تقييم مخاطر الحمل"
         title = Paragraph(title_text, self.styles['CustomTitle'])
         story.append(title)
         story.append(Spacer(1, 12))
@@ -85,6 +85,21 @@ class ReportGenerator:
         metadata = Paragraph(metadata_text, self.styles['Normal'])
         story.append(metadata)
         story.append(Spacer(1, 20))
+        
+        # Patient Information Section
+        patient_info_title = "Patient Information" if report_data['language'] == 'en' else "معلومات المريضة"
+        story.append(Paragraph(patient_info_title, self.styles['SectionHeader']))
+        
+        patient_info = report_data.get('patient_info', {})
+        patient_details = [
+            f"Name: {patient_info.get('name', 'N/A')}" if report_data['language'] == 'en' else f"الاسم: {patient_info.get('name', 'غير متوفر')}",
+            f"Age: {patient_info.get('age', 'N/A')} years" if report_data['language'] == 'en' else f"العمر: {patient_info.get('age', 'غير متوفر')} سنة",
+            f"Gestational Age: {patient_info.get('pregnancy_week', 'N/A')} weeks" if report_data['language'] == 'en' else f"عمر الحمل: {patient_info.get('pregnancy_week', 'غير متوفر')} أسبوع"
+        ]
+        
+        for detail in patient_details:
+            story.append(Paragraph(detail, self.styles['Normal']))
+        story.append(Spacer(1, 15))
         
         # Risk Assessment Summary
         risk_assessment = report_data['risk_assessment']
@@ -112,10 +127,53 @@ class ReportGenerator:
         story.append(Paragraph(risk_assessment['explanation'], self.styles['Normal']))
         story.append(Spacer(1, 12))
         
+        # Pregnancy Week Analysis
+        if 'pregnancy_week_risks' in risk_assessment:
+            week_analysis_title = "Pregnancy Week Analysis" if report_data['language'] == 'en' else "تحليل أسبوع الحمل"
+            story.append(Paragraph(week_analysis_title, self.styles['SectionHeader']))
+            
+            pregnancy_week = risk_assessment.get('pregnancy_week', 'N/A')
+            week_text = f"Current Gestational Age: {pregnancy_week} weeks" if report_data['language'] == 'en' else f"عمر الحمل الحالي: {pregnancy_week} أسبوع"
+            story.append(Paragraph(week_text, self.styles['Normal']))
+            
+            for risk in risk_assessment['pregnancy_week_risks']:
+                story.append(Paragraph(f"• {risk}", self.styles['Normal']))
+            story.append(Spacer(1, 15))
+        
+        # Medical Assessment Summary
+        assessment_title = "Medical Assessment Summary" if report_data['language'] == 'en' else "ملخص التقييم الطبي"
+        story.append(Paragraph(assessment_title, self.styles['SectionHeader']))
+        
+        # Patient responses
+        responses_title = "Patient Responses:" if report_data['language'] == 'en' else "إجابات المريضة:"
+        story.append(Paragraph(responses_title, self.styles['Heading3']))
+        
+        questions = report_data.get('questions', [])
+        responses = report_data.get('responses', [])
+        
+        for i, (question, response) in enumerate(zip(questions, responses), 1):
+            if i > 1:  # Skip patient info context
+                q_text = f"Q{i-1}: {question}" if report_data['language'] == 'en' else f"س{i-1}: {question}"
+                story.append(Paragraph(q_text, self.styles['Normal']))
+                a_text = f"A{i-1}: {response}" if report_data['language'] == 'en' else f"ج{i-1}: {response}"
+                story.append(Paragraph(a_text, self.styles['Normal']))
+                story.append(Spacer(1, 8))
+        
+        story.append(Spacer(1, 15))
+        
         # Recommendations
-        recommendations_title = "Recommendations:" if report_data['language'] == 'en' else "التوصيات:"
+        recommendations_title = "Clinical Recommendations:" if report_data['language'] == 'en' else "التوصيات السريرية:"
         story.append(Paragraph(recommendations_title, self.styles['Heading3']))
         story.append(Paragraph(risk_assessment['recommendations'], self.styles['Normal']))
+        story.append(Spacer(1, 15))
+        
+        # Next Steps
+        next_steps_title = "Next Steps:" if report_data['language'] == 'en' else "الخطوات التالية:"
+        story.append(Paragraph(next_steps_title, self.styles['Heading3']))
+        
+        next_steps = self._get_next_steps(risk_assessment, report_data['language'])
+        for step in next_steps:
+            story.append(Paragraph(f"• {step}", self.styles['Normal']))
         story.append(Spacer(1, 20))
         
         # Urgent care warning if needed
@@ -177,6 +235,69 @@ class ReportGenerator:
         buffer.close()
         
         return pdf_data
+    
+    def _get_next_steps(self, risk_assessment: Dict[str, Any], language: str) -> List[str]:
+        """Generate next steps based on risk assessment"""
+        risk_level = risk_assessment.get('risk_level', 'Low')
+        pregnancy_week = risk_assessment.get('pregnancy_week', 0)
+        
+        if language == 'ar':
+            if risk_level == 'High':
+                steps = [
+                    "طلب العناية الطبية الفورية - اتصلي بطبيبك أو اذهبي إلى غرفة الطوارئ",
+                    "مراقبة الأعراض عن كثب",
+                    "تجنب النشاط البدني الشاق حتى التقييم الطبي"
+                ]
+            elif risk_level == 'Medium':
+                steps = [
+                    "جدولة موعد مع طبيب النساء والتوليد خلال 24-48 ساعة",
+                    "مراقبة الأعراض وتسجيل أي تغييرات",
+                    "الراحة والاسترخاء"
+                ]
+            else:
+                steps = [
+                    "متابعة المواعيد الدورية مع طبيب النساء والتوليد",
+                    "الحفاظ على نمط حياة صحي",
+                    "مراقبة حركة الجنين بانتظام"
+                ]
+        else:
+            if risk_level == 'High':
+                steps = [
+                    "Seek immediate medical attention - contact your doctor or go to emergency room",
+                    "Monitor symptoms closely",
+                    "Avoid strenuous physical activity until medical evaluation"
+                ]
+            elif risk_level == 'Medium':
+                steps = [
+                    "Schedule appointment with OB/GYN within 24-48 hours",
+                    "Monitor symptoms and record any changes",
+                    "Rest and avoid stress"
+                ]
+            else:
+                steps = [
+                    "Continue regular prenatal care appointments",
+                    "Maintain healthy lifestyle",
+                    "Monitor fetal movement regularly"
+                ]
+        
+        # Add pregnancy week-specific steps
+        if pregnancy_week > 0:
+            if language == 'ar':
+                if pregnancy_week <= 12:
+                    steps.append("تناول حمض الفوليك يومياً")
+                elif pregnancy_week <= 28:
+                    steps.append("إجراء فحص السكري للحوامل")
+                else:
+                    steps.append("مراقبة علامات المخاض المبكر")
+            else:
+                if pregnancy_week <= 12:
+                    steps.append("Continue taking folic acid daily")
+                elif pregnancy_week <= 28:
+                    steps.append("Complete gestational diabetes screening")
+                else:
+                    steps.append("Watch for signs of preterm labor")
+        
+        return steps
     
     def generate_json_report(self, report_data: Dict[str, Any]) -> str:
         """Generate JSON report for API consumption"""
