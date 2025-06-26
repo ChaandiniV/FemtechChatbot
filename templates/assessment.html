@@ -325,9 +325,22 @@
                     handleMedicalQuestionsPhase(data);
                 }
                 
-                // Set RTL for Arabic
+                // Set RTL for Arabic and update placeholders and button text
                 if (currentLanguage === 'ar') {
                     document.body.classList.add('rtl');
+                    document.getElementById('answer-input').placeholder = translations.placeholder_answer || 'اكتبي إجابتك هنا...';
+                    document.getElementById('medical-answer-input').placeholder = translations.placeholder_symptoms || 'يرجى وصف الأعراض بالتفصيل...';
+                    document.querySelector('#loading p').textContent = translations.processing_text || 'جاري معالجة معلوماتك...';
+                    document.getElementById('next-btn').textContent = translations.next_button || 'التالي';
+                    document.getElementById('medical-next-btn').textContent = translations.next_question_button || 'السؤال التالي';
+                    document.getElementById('complete-btn').textContent = translations.complete_button || 'إنهاء التقييم';
+                } else {
+                    document.getElementById('answer-input').placeholder = translations.placeholder_answer || 'Type your answer here...';
+                    document.getElementById('medical-answer-input').placeholder = translations.placeholder_symptoms || 'Please describe your symptoms in detail...';
+                    document.querySelector('#loading p').textContent = translations.processing_text || 'Processing your information...';
+                    document.getElementById('next-btn').textContent = translations.next_button || 'Next';
+                    document.getElementById('medical-next-btn').textContent = translations.next_question_button || 'Next Question';
+                    document.getElementById('complete-btn').textContent = translations.complete_button || 'Complete Assessment';
                 }
                 
             } catch (error) {

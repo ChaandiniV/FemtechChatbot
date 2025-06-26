@@ -44,7 +44,14 @@ def get_translations(language: str) -> Dict[str, str]:
             'question_appetite': 'Have you noticed any changes in your appetite?',
             'question_sleep': 'How has your sleep pattern been?',
             'question_urination': 'Have you experienced any changes in urination frequency?',
-            'question_contractions': 'Have you felt any contractions or tightening?'
+            'question_contractions': 'Have you felt any contractions or tightening?',
+            'placeholder_answer': 'Type your answer here...',
+            'placeholder_symptoms': 'Please describe your symptoms in detail...',
+            'processing_text': 'Processing your information...',
+            'loading_questions': 'Loading medical questions...',
+            'next_button': 'Next',
+            'next_question_button': 'Next Question',
+            'complete_button': 'Complete Assessment'
         },
         'ar': {
             'selected_language': 'اللغة المختارة',
@@ -86,7 +93,14 @@ def get_translations(language: str) -> Dict[str, str]:
             'question_appetite': 'هل لاحظتِ أي تغييرات في شهيتك؟',
             'question_sleep': 'كيف كان نمط نومك؟',
             'question_urination': 'هل واجهتِ أي تغييرات في تكرار التبول؟',
-            'question_contractions': 'هل شعرتِ بأي انقباضات أو شد؟'
+            'question_contractions': 'هل شعرتِ بأي انقباضات أو شد؟',
+            'placeholder_answer': 'اكتبي إجابتك هنا...',
+            'placeholder_symptoms': 'يرجى وصف الأعراض بالتفصيل...',
+            'processing_text': 'جاري معالجة معلوماتك...',
+            'loading_questions': 'جاري تحميل الأسئلة الطبية...',
+            'next_button': 'التالي',
+            'next_question_button': 'السؤال التالي',
+            'complete_button': 'إنهاء التقييم'
         }
     }
     
