@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Results - GraviLog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #4A90E2;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .risk-assessment {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        
+        .risk-level-high {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .risk-level-medium {
+            background: linear-gradient(135deg, #feca57, #ff9ff3);
+            color: white;
+        }
+        
+        .risk-level-low {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            color: white;
+        }
+        
+        .risk-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .risk-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .risk-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .urgent-warning {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .questions-responses {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .qa-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .qa-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .qa-question {
+            font-weight: bold;
+            color: #4A90E2;
+            margin-bottom: 8px;
+        }
+        
+        .qa-answer {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #4A90E2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #357ABD;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4A90E2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .arabic {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .disclaimer {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .disclaimer h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .disclaimer p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤱 Assessment Results</h1>
+            <p id="language-display">{{ language_name }}</p>
+        </div>
+        
+        <div class="content">
+            {% if session.risk_assessment.urgent_care_needed %}
+            <div class="urgent-warning">
+                {{ translations.urgent_care_warning }}
+            </div>
+            {% endif %}
+            
+            <div class="risk-assessment risk-level-{{ session.risk_assessment.risk_level.lower() }}">
+                <div class="risk-title">{{ translations.risk_level }}</div>
+                <div class="risk-value">{{ session.risk_assessment.risk_level }}</div>
+                <div class="risk-subtitle">{{ translations.risk_assessment_results }}</div>
+            </div>
+            
+            <div class="section">
+                <h3>{{ translations.explanation }}</h3>
+                <p {% if session.language == 'ar' %}class="arabic"{% endif %}>
+                    {{ session.risk_assessment.explanation }}
+                </p>
+            </div>
+            
+            <div class="section">
+                <h3>{{ translations.recommendations }}</h3>
+                <p {% if session.language == 'ar' %}class="arabic"{% endif %}>
+                    {{ session.risk_assessment.recommendations }}
+                </p>
+            </div>
+            
+            <div class="questions-responses">
+                <h3>{{ translations.previous_responses }}</h3>
+                {% for question, response in zip(session.questions_asked, session.user_responses) %}
+                <div class="qa-item">
+                    <div class="qa-question" {% if session.language == 'ar' %}class="arabic"{% endif %}>
+                        Q{{ loop.index }}: {{ question }}
+                    </div>
+                    <div class="qa-answer" {% if session.language == 'ar' %}class="arabic"{% endif %}>
+                        A: {{ response }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-success" onclick="generateReport()" id="generate-btn">
+                    {{ translations.generate_report }}
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    {{ translations.new_assessment }}
+                </a>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>{{ translations.generating_report }}</p>
+            </div>
+            
+            <div class="disclaimer">
+                <h4>{% if session.language == 'ar' %}إخلاء مسؤولية مهم{% else %}Important Disclaimer{% endif %}</h4>
+                <p {% if session.language == 'ar' %}class="arabic"{% endif %}>
+                    {% if session.language == 'ar' %}
+                    هذا التقييم لأغراض إعلامية فقط ولا يجب أن يحل محل المشورة الطبية المهنية. 
+                    استشيري دائماً مقدم الرعاية الصحية للحصول على تقييم وعلاج طبي مناسب.
+                    {% else %}
+                    This assessment is for informational purposes only and should not replace professional medical advice. 
+                    Always consult with your healthcare provider for proper medical evaluation and treatment.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = '{{ session.session_id if session.session_id else "" }}';
+        
+        async function generateReport() {
+            const btn = document.getElementById('generate-btn');
+            const loading = document.getElementById('loading');
+            
+            btn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/generate-report/${sessionId}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `pregnancy_risk_report_${sessionId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('Error generating report. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert('Error generating report. Please try again.');
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraviLog - Smart Risk Analysis Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .language-selection {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .language-prompt {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .arabic-prompt {
+            direction: rtl;
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .language-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .language-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .language-btn:hover {
+            background: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4A90E2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🤱</div>
+        <h1>GraviLog</h1>
+        <p class="subtitle">Smart Risk Analysis Agent</p>
+        
+        <div class="language-selection">
+            <div class="language-prompt">
+                Hello! Before we begin, would you like to continue in English or Arabic?
+            </div>
+            <div class="arabic-prompt">
+                مرحبًا! قبل أن نبدأ، هل ترغبين في المتابعة باللغة الإنجليزية أم العربية؟
+            </div>
+            
+            <div class="language-buttons">
+                <button class="language-btn" onclick="startSession('en')">English</button>
+                <button class="language-btn" onclick="startSession('ar')">العربية</button>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>AI-Powered Assessment</h3>
+                <p>Advanced analysis using Hugging Face models and medical knowledge base</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🩺</div>
+                <h3>Medical RAG System</h3>
+                <p>Retrieval-augmented generation for accurate medical insights</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Risk Classification</h3>
+                <p>Clear risk levels with detailed explanations and recommendations</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📄</div>
+                <h3>Medical Reports</h3>
+                <p>Downloadable PDF reports for healthcare providers</p>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Starting your assessment...</p>
+        </div>
+    </div>
+
+    <script>
+        async function startSession(language) {
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const formData = new FormData();
+                formData.append('language', language);
+                
+                const response = await fetch('/start-session', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.session_id) {
+                    window.location.href = `/assessment?session_id=${data.session_id}`;
+                }
+            } catch (error) {
+                console.error('Error starting session:', error);
+                alert('Error starting assessment. Please try again.');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
