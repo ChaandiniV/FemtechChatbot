@@ -37,7 +37,14 @@ def get_translations(language: str) -> Dict[str, str]:
             'question_fetal_movement': 'Do you feel your baby has been moving normally today?',
             'question_swelling': 'Have you noticed any unusual swelling in your hands, feet, or face?',
             'question_bleeding': 'Have you experienced any vaginal bleeding or unusual discharge?',
-            'question_blood_pressure': 'Do you know your most recent blood pressure reading? If so, what was it?'
+            'question_blood_pressure': 'Do you know your most recent blood pressure reading? If so, what was it?',
+            'question_nausea': 'Are you experiencing any nausea or vomiting?',
+            'question_fatigue': 'How would you describe your energy levels?',
+            'question_pain': 'Are you experiencing any pain or discomfort?',
+            'question_appetite': 'Have you noticed any changes in your appetite?',
+            'question_sleep': 'How has your sleep pattern been?',
+            'question_urination': 'Have you experienced any changes in urination frequency?',
+            'question_contractions': 'Have you felt any contractions or tightening?'
         },
         'ar': {
             'selected_language': 'اللغة المختارة',
@@ -72,7 +79,14 @@ def get_translations(language: str) -> Dict[str, str]:
             'question_fetal_movement': 'هل شعرتِ بأن حركة الجنين طبيعية اليوم؟',
             'question_swelling': 'هل لاحظتِ تورماً غير طبيعي في يديكِ أو قدميكِ أو وجهكِ؟',
             'question_bleeding': 'هل عانيتِ من نزيف مهبلي أو إفرازات غير طبيعية؟',
-            'question_blood_pressure': 'هل تعرفين قراءة ضغط الدم الأخيرة لديكِ؟ إذا كان الأمر كذلك، ما هي؟'
+            'question_blood_pressure': 'هل تعرفين قراءة ضغط الدم الأخيرة لديكِ؟ إذا كان الأمر كذلك، ما هي؟',
+            'question_nausea': 'هل تعانين من غثيان أو قيء؟',
+            'question_fatigue': 'كيف تصفين مستوى طاقتك؟',
+            'question_pain': 'هل تعانين من أي ألم أو عدم راحة؟',
+            'question_appetite': 'هل لاحظتِ أي تغييرات في شهيتك؟',
+            'question_sleep': 'كيف كان نمط نومك؟',
+            'question_urination': 'هل واجهتِ أي تغييرات في تكرار التبول؟',
+            'question_contractions': 'هل شعرتِ بأي انقباضات أو شد؟'
         }
     }
     

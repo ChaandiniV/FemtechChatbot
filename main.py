@@ -221,7 +221,8 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
         patient_context = f"Patient: {session['patient_info']['name']}, Age: {session['patient_info']['age']}, Pregnancy Week: {session['patient_info']['pregnancy_week']}"
         follow_up_questions = await generate_contextual_questions(
             session["language"], 
-            [patient_context] + session["user_responses"]
+            [patient_context] + session["user_responses"],
+            session["questions_asked"]  # Pass existing questions to avoid repetition
         )
         session["questions_asked"].extend(follow_up_questions[:2])
     
@@ -296,7 +297,7 @@ async def generate_report(session_id: str):
         headers={"Content-Disposition": f"attachment; filename=pregnancy_risk_report_{session_id}.pdf"}
     )
 
-async def generate_contextual_questions(language: str, previous_responses: Optional[List[str]] = None) -> List[str]:
+async def generate_contextual_questions(language: str, previous_responses: Optional[List[str]] = None, existing_questions: Optional[List[str]] = None) -> List[str]:
     """Generate contextual medical questions using RAG + HuggingFace"""
     try:
         # Use RAG to get relevant medical context
@@ -306,23 +307,45 @@ async def generate_contextual_questions(language: str, previous_responses: Optio
         questions = await hf_client.generate_questions(language, context, previous_responses or [])
         
         if questions and len(questions) > 0:
-            return questions
+            # Filter out already asked questions
+            if existing_questions:
+                existing_set = set(existing_questions)
+                questions = [q for q in questions if q not in existing_set]
+            
+            if questions:
+                return questions
     except Exception as e:
         print(f"Error generating questions: {e}")
     
     # Fallback to predefined questions
-    return get_fallback_questions(language)
+    return get_fallback_questions(language, existing_questions or [])
 
-def get_fallback_questions(language: str) -> List[str]:
+def get_fallback_questions(language: str, existing_questions: Optional[List[str]] = None) -> List[str]:
     """Fallback questions if AI generation fails"""
     translations = get_translations(language)
-    return [
+    
+    all_questions = [
         translations["question_headaches"],
         translations["question_fetal_movement"], 
         translations["question_swelling"],
         translations["question_bleeding"],
-        translations["question_blood_pressure"]
+        translations["question_blood_pressure"],
+        translations.get("question_nausea", "Are you experiencing any nausea or vomiting?"),
+        translations.get("question_fatigue", "How would you describe your energy levels?"),
+        translations.get("question_pain", "Are you experiencing any pain or discomfort?"),
+        translations.get("question_appetite", "Have you noticed any changes in your appetite?"),
+        translations.get("question_sleep", "How has your sleep pattern been?"),
+        translations.get("question_urination", "Have you experienced any changes in urination frequency?"),
+        translations.get("question_contractions", "Have you felt any contractions or tightening?")
     ]
+    
+    # Filter out already asked questions
+    if existing_questions:
+        existing_set = set(existing_questions)
+        available_questions = [q for q in all_questions if q not in existing_set]
+        return available_questions if available_questions else all_questions[:3]
+    
+    return all_questions[:5]
 
 async def analyze_risk_with_rag(responses: List[str], language: str) -> Dict[str, Any]:
     """Analyze risk using RAG + HuggingFace"""
