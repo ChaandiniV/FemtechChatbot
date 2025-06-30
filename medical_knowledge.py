@@ -231,3 +231,26 @@ class MedicalKnowledgeBase:
         }
         
         return questions[language].get(category, questions[language]['general'])
+    
+    def get_bilingual_medical_guidelines(self, language: str = 'en') -> Dict[str, str]:
+        """Get comprehensive bilingual medical guidelines for pregnancy"""
+        guidelines = {
+            'emergency_symptoms': {
+                'en': "Emergency symptoms requiring immediate attention: severe bleeding, no fetal movement, severe headaches with vision changes, severe abdominal pain, high blood pressure readings (>160/100).",
+                'ar': "الأعراض الطارئة التي تتطلب عناية فورية: نزيف شديد، عدم حركة الجنين، صداع شديد مع تغيرات في الرؤية، ألم شديد في البطن، قراءات ضغط دم عالية (>160/100)."
+            },
+            'moderate_symptoms': {
+                'en': "Moderate symptoms requiring medical consultation: mild recurring headaches, reduced fetal movement, mild swelling, elevated blood pressure (130-160/80-100), unusual discharge.",
+                'ar': "أعراض متوسطة تتطلب استشارة طبية: صداع خفيف متكرر، قلة حركة الجنين، تورم خفيف، ارتفاع ضغط الدم (130-160/80-100)، إفرازات غير عادية."
+            },
+            'normal_symptoms': {
+                'en': "Normal pregnancy symptoms: mild fatigue, occasional nausea, mild back pain, mild swelling that improves with rest, normal fetal movement patterns.",
+                'ar': "أعراض الحمل الطبيعية: تعب خفيف، غثيان عرضي، ألم خفيف في الظهر، تورم خفيف يتحسن مع الراحة، أنماط حركة جنين طبيعية."
+            },
+            'when_to_call': {
+                'en': "Call your healthcare provider immediately for: bleeding, severe pain, no fetal movement for 12+ hours, severe headaches, vision changes, high blood pressure symptoms.",
+                'ar': "اتصلي بمقدم الرعاية الصحية فوراً في حالة: النزيف، الألم الشديد، عدم حركة الجنين لأكثر من 12 ساعة، الصداع الشديد، تغيرات الرؤية، أعراض ضغط الدم العالي."
+            }
+        }
+        
+        return {key: value[language] for key, value in guidelines.items()}

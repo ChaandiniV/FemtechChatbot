@@ -165,6 +165,30 @@ class Translator:
         
         # Clean up any remaining Arabic text and common Arabic words
         arabic_cleanup = {
+            # Extended medical phrases first
+            'عدة مرات هذا الأسبوع': 'several times this week',
+            'خاصة في المساء': 'especially in the evening',
+            'لا يؤثر على الرؤية': 'does not affect vision',
+            'وعادةً ما يزول': 'and usually goes away',
+            'شرب الماء': 'drinking water',
+            'يتكرر أكثر من المعتاد': 'recurring more than usual',
+            'تحسنت قليلاً': 'improved slightly',
+            'تناولت وجبة': 'had a meal',
+            'استلقيت على جانبي': 'lay on my side',
+            'بعض التورم': 'some swelling',
+            'بنهاية اليوم': 'at the end of the day',
+            'خلال هذا الأسبوع': 'during this week',
+            'يتحسن عند الراحة': 'improves with rest',
+            'كمية صغيرة': 'small amount',
+            'الإفرازات الوردية الفاتحة': 'light pink discharge',
+            'استمرت لبضع ساعات': 'lasted for a few hours',
+            'ثم توقفت': 'then stopped',
+            'ولم يكن هناك': 'and there was no',
+            'في العيادة': 'at the clinic',
+            'الممرضة قالت': 'the nurse said',
+            'طلبت مني مراقبته': 'asked me to monitor it',
+            
+            # Common words
             'في': 'in',
             'من': 'from', 
             'إلى': 'to',
@@ -222,7 +246,6 @@ class Translator:
             'نحو': 'towards',
             'عبر': 'through',
             'على': 'on',
-            'تحت': 'under',
             'بدون': 'without',
             'بسبب': 'because of',
             'رغم': 'despite',

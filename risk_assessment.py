@@ -43,18 +43,21 @@ class RiskAssessment:
             
             # Medium-risk indicators in Arabic (score +2 each)
             medium_risk_keywords = [
-                'صداع خفيف', 'صداع متكرر', 'قيء', 'غثيان', 
-                'تورم خفيف', 'حركة قليلة', 'أقل من المعتاد',
-                'إفرازات مهبلية', 'بلون وردي خفيف',
+                'صداع خفيف', 'صداع متكرر', 'عدة مرات هذا الأسبوع',
+                'قيء', 'غثيان', 'تورم خفيف', 'بعض التورم',
+                'حركة قليلة', 'أقل من المعتاد', 'كانت أقل من المعتاد',
+                'إفرازات مهبلية', 'بلون وردي خفيف', 'كمية صغيرة',
                 'دوخة', 'تعب شديد', 'ألم خفيف',
-                '138/89', 'قريب من الحد الأعلى', 'متابعة مستمرة',
-                'يتحسن مع الراحة', 'يزول بعد الراحة'
+                '138/89', '138/88', 'قريب من الحد الأعلى', 'متابعة مستمرة',
+                'يتحسن مع الراحة', 'يزول بعد الراحة', 'يتحسن عند الراحة',
+                'وعادةً ما يزول', 'تحسنت قليلاً', 'استمرت لبضع ساعات ثم توقفت'
             ]
             
             # Low-risk indicators in Arabic (score +1 each)
             low_risk_keywords = [
                 'غثيان خفيف', 'تعب', 'ألم في الظهر', 'إمساك',
-                'حساسية الثدي', 'تبول متكرر', 'طبيعي', 'عادي'
+                'حساسية الثدي', 'تبول متكرر', 'طبيعي', 'عادي',
+                'لا يؤثر على الرؤية', 'ولم يكن هناك ألم', 'تحسنت قليلاً'
             ]
         else:
             # High-risk indicators in English (score +3 each)
@@ -87,24 +90,31 @@ class RiskAssessment:
                 'breast tenderness', 'frequent urination', 'normal', 'fine'
             ]
         
+        # Check high-risk first and exclude if found
+        high_risk_found = False
         for keyword in high_risk_keywords:
             if keyword in combined_text:
                 risk_score += 3
                 risk_factors.append(keyword)
+                high_risk_found = True
                 if language == 'ar':
                     print(f"Found high-risk Arabic keyword: {keyword}")
         
-        for keyword in medium_risk_keywords:
-            if keyword in combined_text and keyword not in ' '.join(risk_factors):
-                risk_score += 2
-                risk_factors.append(keyword)
-                if language == 'ar':
-                    print(f"Found medium-risk Arabic keyword: {keyword}")
+        # Only check medium-risk if no high-risk symptoms found
+        if not high_risk_found:
+            for keyword in medium_risk_keywords:
+                if keyword in combined_text:
+                    risk_score += 2
+                    risk_factors.append(keyword)
+                    if language == 'ar':
+                        print(f"Found medium-risk Arabic keyword: {keyword}")
         
-        for keyword in low_risk_keywords:
-            if keyword in combined_text and keyword not in ' '.join(risk_factors):
-                risk_score += 1
-                risk_factors.append(keyword)
+        # Add low-risk factors only if no high-risk found
+        if not high_risk_found:
+            for keyword in low_risk_keywords:
+                if keyword in combined_text and keyword not in ' '.join(risk_factors):
+                    risk_score += 1
+                    risk_factors.append(keyword)
         
         # Debug: Print final risk calculation
         if language == 'ar':
@@ -112,10 +122,12 @@ class RiskAssessment:
             print(f"Risk factors found: {risk_factors}")
             print(f"=== END DEBUG ===")
         
-        # Determine risk level based on score
-        if risk_score >= 6:
+        # Determine risk level based on score and content
+        if high_risk_found and risk_score >= 3:
             risk_level = 'High'
-        elif risk_score >= 3:
+        elif risk_score >= 4:  # Multiple medium-risk factors
+            risk_level = 'Medium'
+        elif risk_score >= 2:  # Some medium-risk factors
             risk_level = 'Medium'
         else:
             risk_level = 'Low'
