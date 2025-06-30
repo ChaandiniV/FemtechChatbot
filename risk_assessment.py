@@ -29,24 +29,26 @@ class RiskAssessment:
         if language == 'ar':
             # High-risk indicators in Arabic (score +3 each) - Based on actual user responses
             high_risk_keywords = [
-                'نزيف شديد', 'نزيف مهبلي', 'نزيف غزير', 'نزيفًا', 'نزيف',
-                'نزيفًا مهبليًا غزيرًا', 'نزيف مهبلي غزير', 'نزيفا مهبليا غزيرا',
-                'ألم شديد', 'ألم في البطن', 'تقلصات شديدة', 'تقلصات شديدة أسفل البطن',
-                'لا حركة', 'لم أشعر بحركة', 'لم أشعر بأي حركة', 'لم أشعر بأي حركة للجنين',
-                'رؤية ضبابية', 'رؤية مشوشة', 'تصبح الرؤية ضبابية', 'أحيانًا تصبح الرؤية ضبابية',
-                'صداع شديد', 'صداع مستمر', 'صداع لا يزول', 'أعاني من صداع مستمر لا يزول',
+                'نزيف شديد', 'نزيف غزير', 'نزيفًا مهبليًا غزيرًا', 'نزيف مهبلي غزير',
+                'ألم شديد', 'تقلصات شديدة', 'تقلصات شديدة أسفل البطن',
+                'لا حركة', 'لم أشعر بحركة', 'لم أشعر بأي حركة للجنين',
+                'رؤية ضبابية', 'تصبح الرؤية ضبابية', 'مشاكل في البصر',
+                'صداع شديد', 'صداع مستمر لا يزول', 'أعاني من صداع مستمر لا يزول',
                 'حمى', 'صعوبة في التنفس', 'ألم في الصدر',
-                'فقدان الوعي', 'دوخة شديدة', 'ضغط الدم', '160/100',
+                'فقدان الوعي', 'دوخة شديدة', 'إغماء',
                 'تورم مفاجئ', 'تورم شديد', 'تورمًا مفاجئًا وشديدًا', 'لاحظت تورماً مفاجئاً وشديداً',
+                'ضغط دم عالي', '160/100', '150/95',
                 'بدأ بشكل مفاجئ', 'منذ البارحة', 'منذ عدة ساعات'
             ]
             
             # Medium-risk indicators in Arabic (score +2 each)
             medium_risk_keywords = [
-                'قيء', 'تورم', 'صداع', 'حركة قليلة', 'ألم', 'إفرازات', 'غثيان', 
-                'دوخة', 'تعب شديد', 'نعم', 'أعاني', 'أشعر', 'لاحظت', 'عندي', 
-                'موجود', 'يوجد', 'احس', 'اشعر', 'اعاني', 'لاحظت', 'شعرت',
-                'مصحوبًا', 'بدأ بشكل مفاجئ', 'ضغط في الرأس', 'مع المسكنات'
+                'صداع خفيف', 'صداع متكرر', 'قيء', 'غثيان', 
+                'تورم خفيف', 'حركة قليلة', 'أقل من المعتاد',
+                'إفرازات مهبلية', 'بلون وردي خفيف',
+                'دوخة', 'تعب شديد', 'ألم خفيف',
+                '138/89', 'قريب من الحد الأعلى', 'متابعة مستمرة',
+                'يتحسن مع الراحة', 'يزول بعد الراحة'
             ]
             
             # Low-risk indicators in Arabic (score +1 each)
@@ -57,17 +59,26 @@ class RiskAssessment:
         else:
             # High-risk indicators in English (score +3 each)
             high_risk_keywords = [
-                'heavy bleeding', 'severe pain', 'no movement', 'blurry vision',
-                'severe headache', 'fever', 'difficulty breathing', 'chest pain',
-                'severe abdominal pain', 'heavy vaginal bleeding', 'unconscious',
-                'yes bleeding', 'yes pain', 'yes headache', 'yes fever'
+                'heavy bleeding', 'severe bleeding', 'heavy vaginal bleeding',
+                'severe pain', 'severe abdominal pain', 'severe contractions',
+                'no fetal movement', 'no movement felt',
+                'blurry vision', 'vision becomes blurry', 'vision problems',
+                'severe headache', 'persistent headache that won\'t go away',
+                'fever', 'difficulty breathing', 'chest pain',
+                'unconscious', 'fainting', 'severe dizziness',
+                'sudden swelling', 'severe swelling', 'sudden and severe swelling',
+                'high blood pressure', '160/100', '150/95',
+                'started suddenly'
             ]
             
             # Medium-risk indicators in English (score +2 each)
             medium_risk_keywords = [
-                'vomiting', 'blood pressure', 'swelling', 'headache',
-                'bleeding', 'decreased movement', 'pain', 'discharge',
-                'nausea', 'dizziness', 'severe fatigue', 'yes', 'experiencing'
+                'mild headache', 'recurring headache', 'vomiting', 'nausea',
+                'mild swelling', 'less than usual', 'long periods',
+                'vaginal discharge', 'light pink color',
+                'dizziness', 'severe fatigue', 'mild pain',
+                '138/89', 'close to upper limit', 'continuous monitoring',
+                'improves with', 'goes away after'
             ]
             
             # Low-risk indicators in English (score +1 each)
