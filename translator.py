@@ -134,12 +134,112 @@ class Translator:
         }
         
         # Translate the text by replacing Arabic phrases with English equivalents
-        translated_text = arabic_text.lower()
+        translated_text = arabic_text
         
         # Sort by length (longest first) to avoid partial replacements
         for arabic_phrase, english_phrase in sorted(arabic_to_english.items(), key=lambda x: len(x[0]), reverse=True):
             if arabic_phrase in translated_text:
                 translated_text = translated_text.replace(arabic_phrase, english_phrase)
+        
+        # Clean up any remaining Arabic text and common Arabic words
+        arabic_cleanup = {
+            'في': 'in',
+            'من': 'from', 
+            'إلى': 'to',
+            'مع': 'with',
+            'بعد': 'after',
+            'قبل': 'before',
+            'عند': 'when',
+            'كان': 'was',
+            'كانت': 'was',
+            'هو': 'it',
+            'هي': 'it',
+            'هذا': 'this',
+            'هذه': 'this',
+            'ذلك': 'that',
+            'التي': 'which',
+            'الذي': 'which',
+            'وقت': 'time',
+            'يوم': 'day',
+            'ليلة': 'night',
+            'ساعة': 'hour',
+            'دقيقة': 'minute',
+            'أسبوع': 'week',
+            'شهر': 'month',
+            'سنة': 'year',
+            'جداً': 'very',
+            'كثيراً': 'much',
+            'قليلاً': 'little',
+            'أيضاً': 'also',
+            'فقط': 'only',
+            'جميع': 'all',
+            'بعض': 'some',
+            'كل': 'every',
+            'أي': 'any',
+            'لكن': 'but',
+            'أو': 'or',
+            'إذا': 'if',
+            'عندما': 'when',
+            'حيث': 'where',
+            'كيف': 'how',
+            'لماذا': 'why',
+            'ماذا': 'what',
+            'متى': 'when',
+            'أين': 'where',
+            'خلال': 'during',
+            'منذ': 'since',
+            'حتى': 'until',
+            'بين': 'between',
+            'أمام': 'in front of',
+            'خلف': 'behind',
+            'فوق': 'above',
+            'تحت': 'under',
+            'بجانب': 'beside',
+            'حول': 'around',
+            'ضد': 'against',
+            'نحو': 'towards',
+            'عبر': 'through',
+            'على': 'on',
+            'تحت': 'under',
+            'بدون': 'without',
+            'بسبب': 'because of',
+            'رغم': 'despite',
+            'خاصة': 'especially',
+            'أيضا': 'also',
+            'لذلك': 'therefore',
+            'لهذا': 'for this',
+            'بهذا': 'with this',
+            'وهذا': 'and this',
+            'وكان': 'and was',
+            'وكانت': 'and was',
+            'وهو': 'and it',
+            'وهي': 'and it',
+            'ولكن': 'but',
+            'وأيضاً': 'and also',
+            'وبعد': 'and after',
+            'وقبل': 'and before',
+            'ومع': 'and with',
+            'وبدون': 'and without',
+            'اليومين الماضيين': 'the past two days',
+            'الأيام الماضية': 'recent days',
+            'الآن': 'now',
+            'حالياً': 'currently'
+        }
+        
+        # Apply cleanup translations
+        for arabic_word, english_word in arabic_cleanup.items():
+            translated_text = translated_text.replace(arabic_word, english_word)
+        
+        # Remove any remaining Arabic characters and clean up spacing
+        import re
+        # Remove Arabic characters (Unicode range for Arabic)
+        translated_text = re.sub(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]', '', translated_text)
+        
+        # Clean up multiple spaces and punctuation
+        translated_text = re.sub(r'\s+', ' ', translated_text)  # Multiple spaces to single
+        translated_text = re.sub(r'\s*،\s*', ', ', translated_text)  # Arabic comma to English
+        translated_text = translated_text.replace('،', ',')  # Any remaining Arabic commas
+        translated_text = translated_text.strip()
         
         return translated_text
     

@@ -122,7 +122,14 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 - **Features**: Basic rule-based assessment, bilingual UI
 - **Limitations**: No AI features, no PDF generation
 
-## Recent Fixes (June 26, 2025)
+## Recent Fixes (June 30, 2025)
+
+### EMR Report English Translation
+- ✅ EMR reports now always generate in English for medical professionals
+- ✅ Enhanced Arabic-to-English translation for medical documentation
+- ✅ Comprehensive medical terminology translation dictionary
+- ✅ Clean translation output removing mixed Arabic-English text
+- ✅ User interface remains in chosen language while EMR is English-only
 
 ### Arabic Language Support
 - ✅ Fixed Arabic risk assessment with bilingual keyword matching
