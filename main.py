@@ -286,12 +286,23 @@ async def generate_report(session_id: str):
     if not session["completed"]:
         raise HTTPException(status_code=400, detail="Assessment not completed")
     
+    # Always generate EMR reports in English for medical professionals
+    from translator import translator
+    
+    # Translate Arabic content to English if needed
+    if session['language'] == 'ar':
+        translated_responses = [translator.translate_arabic_to_english(response) for response in session['user_responses']]
+        translated_questions = [translator.translate_arabic_to_english(question) for question in session['questions_asked']]
+    else:
+        translated_responses = session['user_responses']
+        translated_questions = session['questions_asked']
+    
     report_data = {
-        'language': session['language'],
+        'language': 'en',  # Always English for EMR
         'timestamp': datetime.now().isoformat(),
         'patient_info': session['patient_info'],
-        'questions': session['questions_asked'],
-        'responses': session['user_responses'],
+        'questions': translated_questions,
+        'responses': translated_responses,
         'risk_assessment': session['risk_assessment']
     }
     

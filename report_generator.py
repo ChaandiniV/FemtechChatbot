@@ -77,7 +77,7 @@ class ReportGenerator:
         ))
     
     def generate_pdf_report(self, report_data: Dict[str, Any]) -> bytes:
-        """Generate PDF report from assessment data"""
+        """Generate PDF report from assessment data - Always in English for medical professionals"""
         
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72,
@@ -86,34 +86,33 @@ class ReportGenerator:
         # Build report content
         story = []
         
-        # Title with proper Arabic handling
-        if report_data['language'] == 'ar':
-            title_text = "السجل الطبي الإلكتروني - تقييم مخاطر الحمل"
-            # Use HTML encoding for Arabic text in PDF
-            title_text = f'<font name="Helvetica">{title_text}</font>'
-        else:
-            title_text = "Electronic Medical Record - Pregnancy Risk Assessment"
+        # Title - Always in English for EMR
+        title_text = "Electronic Medical Record - Pregnancy Risk Assessment"
+        
+        # Add note if original was in Arabic
+        if report_data.get('original_language') == 'ar':
+            title_text += "\n(Translated from Arabic for Medical Documentation)"
         
         title = Paragraph(title_text, self.styles['CustomTitle'])
         story.append(title)
         story.append(Spacer(1, 12))
         
-        # Report metadata
+        # Report metadata - Always in English
         timestamp = datetime.fromisoformat(report_data['timestamp'])
-        metadata_text = f"Generated on: {timestamp.strftime('%B %d, %Y at %I:%M %p')}" if report_data['language'] == 'en' else f"تم إنشاؤه في: {timestamp.strftime('%d %B %Y في %I:%M %p')}"
+        metadata_text = f"Generated on: {timestamp.strftime('%B %d, %Y at %I:%M %p')}"
         metadata = Paragraph(metadata_text, self.styles['Normal'])
         story.append(metadata)
         story.append(Spacer(1, 20))
         
-        # Patient Information Section
-        patient_info_title = "Patient Information" if report_data['language'] == 'en' else "معلومات المريضة"
+        # Patient Information Section - Always in English
+        patient_info_title = "Patient Information"
         story.append(Paragraph(patient_info_title, self.styles['SectionHeader']))
         
         patient_info = report_data.get('patient_info', {})
         patient_details = [
-            f"Name: {patient_info.get('name', 'N/A')}" if report_data['language'] == 'en' else f"الاسم: {patient_info.get('name', 'غير متوفر')}",
-            f"Age: {patient_info.get('age', 'N/A')} years" if report_data['language'] == 'en' else f"العمر: {patient_info.get('age', 'غير متوفر')} سنة",
-            f"Gestational Age: {patient_info.get('pregnancy_week', 'N/A')} weeks" if report_data['language'] == 'en' else f"عمر الحمل: {patient_info.get('pregnancy_week', 'غير متوفر')} أسبوع"
+            f"Name: {patient_info.get('name', 'N/A')}",
+            f"Age: {patient_info.get('age', 'N/A')} years",
+            f"Gestational Age: {patient_info.get('pregnancy_week', 'N/A')} weeks"
         ]
         
         for detail in patient_details:
@@ -124,7 +123,7 @@ class ReportGenerator:
         risk_assessment = report_data['risk_assessment']
         
         # Risk level section
-        risk_section_title = "Risk Assessment Summary" if report_data['language'] == 'en' else "ملخص تقييم المخاطر"
+        risk_section_title = "Risk Assessment Summary"
         story.append(Paragraph(risk_section_title, self.styles['SectionHeader']))
         
         # Risk level with appropriate styling
@@ -135,41 +134,26 @@ class ReportGenerator:
             'Low': 'LowRisk'
         }
         
-        # Translate risk level to Arabic
-        risk_level_arabic = {
-            'High': 'عالي',
-            'Medium': 'متوسط', 
-            'Low': 'منخفض'
-        }
-        
-        if report_data['language'] == 'ar':
-            risk_level_display = risk_level_arabic.get(risk_level, risk_level)
-            risk_level_text = f"مستوى الخطورة: {risk_level_display}"
-        else:
-            risk_level_text = f"Risk Level: {risk_level}"
+        risk_level_text = f"Risk Level: {risk_level}"
         risk_level_para = Paragraph(risk_level_text, self.styles[risk_style_map[risk_level]])
         story.append(risk_level_para)
         story.append(Spacer(1, 12))
         
-        # Explanation with translation
-        explanation_title = "Explanation:" if report_data['language'] == 'en' else "التفسير:"
+        # Explanation
+        explanation_title = "Explanation:"
         story.append(Paragraph(explanation_title, self.styles['Heading3']))
         
         explanation_text = risk_assessment['explanation']
-        if report_data['language'] == 'ar':
-            # Translate explanation to Arabic
-            explanation_text = translator.translate_english_to_arabic(explanation_text)
-        
         story.append(Paragraph(explanation_text, self.styles['Normal']))
         story.append(Spacer(1, 12))
         
         # Pregnancy Week Analysis
         if 'pregnancy_week_risks' in risk_assessment:
-            week_analysis_title = "Pregnancy Week Analysis" if report_data['language'] == 'en' else "تحليل أسبوع الحمل"
+            week_analysis_title = "Pregnancy Week Analysis"
             story.append(Paragraph(week_analysis_title, self.styles['SectionHeader']))
             
             pregnancy_week = risk_assessment.get('pregnancy_week', 'N/A')
-            week_text = f"Current Gestational Age: {pregnancy_week} weeks" if report_data['language'] == 'en' else f"عمر الحمل الحالي: {pregnancy_week} أسبوع"
+            week_text = f"Current Gestational Age: {pregnancy_week} weeks"
             story.append(Paragraph(week_text, self.styles['Normal']))
             
             for risk in risk_assessment['pregnancy_week_risks']:
@@ -177,11 +161,11 @@ class ReportGenerator:
             story.append(Spacer(1, 15))
         
         # Medical Assessment Summary
-        assessment_title = "Medical Assessment Summary" if report_data['language'] == 'en' else "ملخص التقييم الطبي"
+        assessment_title = "Medical Assessment Summary"
         story.append(Paragraph(assessment_title, self.styles['SectionHeader']))
         
         # Patient responses
-        responses_title = "Patient Responses:" if report_data['language'] == 'en' else "إجابات المريضة:"
+        responses_title = "Patient Responses:"
         story.append(Paragraph(responses_title, self.styles['Heading3']))
         
         questions = report_data.get('questions', [])
@@ -189,44 +173,40 @@ class ReportGenerator:
         
         for i, (question, response) in enumerate(zip(questions, responses), 1):
             if i > 1:  # Skip patient info context
-                q_text = f"Q{i-1}: {question}" if report_data['language'] == 'en' else f"س{i-1}: {question}"
+                q_text = f"Q{i-1}: {question}"
                 story.append(Paragraph(q_text, self.styles['Normal']))
-                a_text = f"A{i-1}: {response}" if report_data['language'] == 'en' else f"ج{i-1}: {response}"
+                a_text = f"A{i-1}: {response}"
                 story.append(Paragraph(a_text, self.styles['Normal']))
                 story.append(Spacer(1, 8))
         
         story.append(Spacer(1, 15))
         
-        # Recommendations with translation
-        recommendations_title = "Clinical Recommendations:" if report_data['language'] == 'en' else "التوصيات السريرية:"
+        # Recommendations
+        recommendations_title = "Clinical Recommendations:"
         story.append(Paragraph(recommendations_title, self.styles['Heading3']))
         
         recommendations_text = risk_assessment['recommendations']
-        if report_data['language'] == 'ar':
-            # Translate recommendations to Arabic
-            recommendations_text = translator.translate_english_to_arabic(recommendations_text)
-        
         story.append(Paragraph(recommendations_text, self.styles['Normal']))
         story.append(Spacer(1, 15))
         
         # Next Steps
-        next_steps_title = "Next Steps:" if report_data['language'] == 'en' else "الخطوات التالية:"
+        next_steps_title = "Next Steps:"
         story.append(Paragraph(next_steps_title, self.styles['Heading3']))
         
-        next_steps = self._get_next_steps(risk_assessment, report_data['language'])
+        next_steps = self._get_next_steps(risk_assessment, 'en')  # Always get English next steps
         for step in next_steps:
             story.append(Paragraph(f"• {step}", self.styles['Normal']))
         story.append(Spacer(1, 20))
         
         # Urgent care warning if needed
         if risk_assessment.get('urgent_care_needed', False):
-            urgent_text = "⚠️ URGENT: This assessment indicates you should seek immediate medical attention." if report_data['language'] == 'en' else "⚠️ عاجل: يشير هذا التقييم إلى ضرورة طلب العناية الطبية الفورية."
+            urgent_text = "⚠️ URGENT: This assessment indicates immediate medical attention is required."
             urgent_para = Paragraph(urgent_text, self.styles['HighRisk'])
             story.append(urgent_para)
             story.append(Spacer(1, 20))
         
         # Questions and Responses section
-        qa_section_title = "Assessment Questions and Responses" if report_data['language'] == 'en' else "أسئلة التقييم والإجابات"
+        qa_section_title = "Assessment Questions and Responses"
         story.append(Paragraph(qa_section_title, self.styles['SectionHeader']))
         
         # Create Q&A table
@@ -253,18 +233,17 @@ class ReportGenerator:
         story.append(Spacer(1, 30))
         
         # Disclaimer
-        disclaimer_title = "Important Disclaimer:" if report_data['language'] == 'en' else "إخلاء مسؤولية مهم:"
+        disclaimer_title = "Important Disclaimer:"
         story.append(Paragraph(disclaimer_title, self.styles['Heading3']))
         
         disclaimer_text = """This assessment is for informational purposes only and should not replace professional medical advice. 
-        Always consult with your healthcare provider for proper medical evaluation and treatment.""" if report_data['language'] == 'en' else """هذا التقييم لأغراض إعلامية فقط ولا يجب أن يحل محل المشورة الطبية المهنية.
-        استشيري دائماً مقدم الرعاية الصحية للحصول على تقييم وعلاج طبي مناسب."""
+        Always consult with your healthcare provider for proper medical evaluation and treatment."""
         
         story.append(Paragraph(disclaimer_text, self.styles['Normal']))
         
         # Footer
         story.append(Spacer(1, 30))
-        footer_text = "Generated by GraviLog Smart Risk Analysis Agent" if report_data['language'] == 'en' else "تم إنشاؤه بواسطة وكيل تحليل المخاطر الذكي GraviLog"
+        footer_text = "Generated by GraviLog Smart Risk Analysis Agent"
         footer = Paragraph(footer_text, self.styles['Normal'])
         story.append(footer)
         
@@ -279,65 +258,37 @@ class ReportGenerator:
         return pdf_data
     
     def _get_next_steps(self, risk_assessment: Dict[str, Any], language: str) -> List[str]:
-        """Generate next steps based on risk assessment"""
+        """Generate next steps based on risk assessment - Always in English for EMR"""
         risk_level = risk_assessment.get('risk_level', 'Low')
         pregnancy_week = risk_assessment.get('pregnancy_week', 0)
         
-        if language == 'ar':
-            if risk_level == 'High':
-                steps = [
-                    "طلب العناية الطبية الفورية - اتصلي بطبيبك أو اذهبي إلى غرفة الطوارئ",
-                    "مراقبة الأعراض عن كثب",
-                    "تجنب النشاط البدني الشاق حتى التقييم الطبي"
-                ]
-            elif risk_level == 'Medium':
-                steps = [
-                    "جدولة موعد مع طبيب النساء والتوليد خلال 24-48 ساعة",
-                    "مراقبة الأعراض وتسجيل أي تغييرات",
-                    "الراحة والاسترخاء"
-                ]
-            else:
-                steps = [
-                    "متابعة المواعيد الدورية مع طبيب النساء والتوليد",
-                    "الحفاظ على نمط حياة صحي",
-                    "مراقبة حركة الجنين بانتظام"
-                ]
+        if risk_level == 'High':
+            steps = [
+                "Seek immediate medical attention - contact your doctor or go to emergency room",
+                "Monitor symptoms closely",
+                "Avoid strenuous physical activity until medical evaluation"
+            ]
+        elif risk_level == 'Medium':
+            steps = [
+                "Schedule appointment with OB/GYN within 24-48 hours",
+                "Monitor symptoms and record any changes",
+                "Rest and avoid stress"
+            ]
         else:
-            if risk_level == 'High':
-                steps = [
-                    "Seek immediate medical attention - contact your doctor or go to emergency room",
-                    "Monitor symptoms closely",
-                    "Avoid strenuous physical activity until medical evaluation"
-                ]
-            elif risk_level == 'Medium':
-                steps = [
-                    "Schedule appointment with OB/GYN within 24-48 hours",
-                    "Monitor symptoms and record any changes",
-                    "Rest and avoid stress"
-                ]
-            else:
-                steps = [
-                    "Continue regular prenatal care appointments",
-                    "Maintain healthy lifestyle",
-                    "Monitor fetal movement regularly"
-                ]
+            steps = [
+                "Continue regular prenatal care appointments",
+                "Maintain healthy lifestyle",
+                "Monitor fetal movement regularly"
+            ]
         
         # Add pregnancy week-specific steps
         if pregnancy_week > 0:
-            if language == 'ar':
-                if pregnancy_week <= 12:
-                    steps.append("تناول حمض الفوليك يومياً")
-                elif pregnancy_week <= 28:
-                    steps.append("إجراء فحص السكري للحوامل")
-                else:
-                    steps.append("مراقبة علامات المخاض المبكر")
+            if pregnancy_week <= 12:
+                steps.append("Continue taking folic acid daily")
+            elif pregnancy_week <= 28:
+                steps.append("Complete gestational diabetes screening")
             else:
-                if pregnancy_week <= 12:
-                    steps.append("Continue taking folic acid daily")
-                elif pregnancy_week <= 28:
-                    steps.append("Complete gestational diabetes screening")
-                else:
-                    steps.append("Watch for signs of preterm labor")
+                steps.append("Watch for signs of preterm labor")
         
         return steps
     

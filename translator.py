@@ -11,8 +11,24 @@ class Translator:
     def translate_arabic_to_english(self, arabic_text: str) -> str:
         """Translate Arabic text to English for risk assessment"""
         
-        # Common Arabic medical terms to English mapping
+        # Comprehensive Arabic medical terms to English mapping
         arabic_to_english = {
+            # Questions translation
+            'هل تعاني من': 'Do you experience',
+            'هل تشعر بـ': 'Do you feel',
+            'هل لاحظت': 'Have you noticed',
+            'متى بدأت': 'When did it start',
+            'كم مرة': 'How often',
+            'ما مدى شدة': 'How severe is',
+            'هل يوجد': 'Is there',
+            'هل تعانين من': 'Do you experience',
+            'هل تشعرين بـ': 'Do you feel',
+            'هل لاحظت أي': 'Have you noticed any',
+            'خلال فترة الحمل': 'during pregnancy',
+            'في الآونة الأخيرة': 'recently',
+            'في الأسابيع الماضية': 'in recent weeks',
+            'منذ بداية الحمل': 'since pregnancy began',
+            
             # High-risk symptoms
             'نزيف': 'bleeding',
             'نزيف شديد': 'severe bleeding',
@@ -21,13 +37,17 @@ class Translator:
             'نزيفًا مهبليًا غزيرًا': 'heavy vaginal bleeding',
             'ألم شديد': 'severe pain',
             'ألم في البطن': 'abdominal pain',
+            'ألم أسفل البطن': 'lower abdominal pain',
             'تقلصات شديدة': 'severe contractions',
             'تقلصات شديدة أسفل البطن': 'severe lower abdominal contractions',
             'لم أشعر بأي حركة': 'no movement felt',
             'لم أشعر بأي حركة للجنين': 'no fetal movement felt',
             'لا حركة': 'no movement',
+            'لا حركة للجنين': 'no fetal movement',
+            'حركة الجنين': 'fetal movement',
             'رؤية ضبابية': 'blurry vision',
             'تصبح الرؤية ضبابية': 'vision becomes blurry',
+            'مشاكل في البصر': 'vision problems',
             'صداع شديد': 'severe headache',
             'صداع مستمر': 'persistent headache',
             'صداع لا يزول': 'headache that won\'t go away',
@@ -36,9 +56,19 @@ class Translator:
             'تورم شديد': 'severe swelling',
             'تورمًا مفاجئًا وشديدًا': 'sudden and severe swelling',
             'لاحظت تورماً مفاجئاً وشديداً': 'I noticed sudden and severe swelling',
+            'تورم في الوجه': 'facial swelling',
+            'تورم في اليدين': 'hand swelling',
+            'تورم في القدمين': 'foot swelling',
             'ضغط الدم': 'blood pressure',
+            'ضغط دم عالي': 'high blood pressure',
             '160/100': 'high blood pressure 160/100',
             'دوخة شديدة': 'severe dizziness',
+            'إغماء': 'fainting',
+            'فقدان الوعي': 'loss of consciousness',
+            'ضيق في التنفس': 'shortness of breath',
+            'صعوبة في التنفس': 'difficulty breathing',
+            'حمى': 'fever',
+            'حرارة عالية': 'high fever',
             'بدأ بشكل مفاجئ': 'started suddenly',
             'منذ البارحة': 'since yesterday',
             'منذ عدة ساعات': 'since several hours',
@@ -51,21 +81,56 @@ class Translator:
             'غثيان': 'nausea',
             'قيء': 'vomiting',
             'تعب': 'fatigue',
+            'إرهاق': 'exhaustion',
             'ألم': 'pain',
             'دوخة': 'dizziness',
+            'دوار': 'vertigo',
+            'حرقة المعدة': 'heartburn',
+            'عسر الهضم': 'indigestion',
+            'إمساك': 'constipation',
+            'إسهال': 'diarrhea',
+            'آلام الظهر': 'back pain',
+            'تشنجات': 'cramps',
+            
+            # Normal pregnancy symptoms
+            'غثيان الصباح': 'morning sickness',
+            'تعب خفيف': 'mild fatigue',
+            'تورم طفيف': 'mild swelling',
+            'آلام خفيفة': 'mild pain',
             
             # Common responses
             'نعم': 'yes',
             'لا': 'no',
             'أعاني': 'I suffer from',
+            'أعاني من': 'I suffer from',
             'أشعر': 'I feel',
+            'أشعر بـ': 'I feel',
             'لاحظت': 'I noticed',
             'شعرت': 'I felt',
             'عندي': 'I have',
             'يوجد': 'there is',
             'موجود': 'present',
             'طبيعي': 'normal',
-            'عادي': 'normal'
+            'عادي': 'normal',
+            'طفيف': 'mild',
+            'متوسط': 'moderate',
+            'شديد': 'severe',
+            'أحياناً': 'sometimes',
+            'دائماً': 'always',
+            'أبداً': 'never',
+            'كثيراً': 'frequently',
+            'قليلاً': 'rarely',
+            
+            # Time indicators
+            'اليوم': 'today',
+            'أمس': 'yesterday',
+            'هذا الأسبوع': 'this week',
+            'الأسبوع الماضي': 'last week',
+            'منذ أسبوع': 'since a week ago',
+            'منذ يومين': 'since two days ago',
+            'صباحاً': 'in the morning',
+            'مساءً': 'in the evening',
+            'ليلاً': 'at night'
         }
         
         # Translate the text by replacing Arabic phrases with English equivalents
