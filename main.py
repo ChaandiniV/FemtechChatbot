@@ -317,54 +317,25 @@ async def generate_report(session_id: str):
     )
 
 async def generate_contextual_questions(language: str, previous_responses: Optional[List[str]] = None, existing_questions: Optional[List[str]] = None) -> List[str]:
-    """Generate contextual medical questions using RAG + HuggingFace"""
-    try:
-        # Use RAG to get relevant medical context
-        context = rag_system.get_relevant_context(previous_responses or [], language)
-        
-        # Generate questions using HuggingFace
-        questions = await hf_client.generate_questions(language, context, previous_responses or [])
-        
-        if questions and len(questions) > 0:
-            # Filter out already asked questions
-            if existing_questions:
-                existing_set = set(existing_questions)
-                questions = [q for q in questions if q not in existing_set]
-            
-            if questions:
-                return questions
-    except Exception as e:
-        print(f"Error generating questions: {e}")
-    
-    # Fallback to predefined questions
+    """Generate contextual medical questions - Always use standardized questions for consistency"""
+    # Always use standardized questions to ensure consistency between languages
+    # This prevents the issues with AI-generated questions being different each time
     return get_fallback_questions(language, existing_questions or [])
 
 def get_fallback_questions(language: str, existing_questions: Optional[List[str]] = None) -> List[str]:
-    """Fallback questions if AI generation fails"""
+    """Standard medical questions - always returns same 5 questions in same order"""
     translations = get_translations(language)
     
-    all_questions = [
+    # Always return the same 5 core medical questions in the same order for consistency
+    standard_questions = [
         translations["question_headaches"],
         translations["question_fetal_movement"], 
         translations["question_swelling"],
         translations["question_bleeding"],
-        translations["question_blood_pressure"],
-        translations.get("question_nausea", "Are you experiencing any nausea or vomiting?"),
-        translations.get("question_fatigue", "How would you describe your energy levels?"),
-        translations.get("question_pain", "Are you experiencing any pain or discomfort?"),
-        translations.get("question_appetite", "Have you noticed any changes in your appetite?"),
-        translations.get("question_sleep", "How has your sleep pattern been?"),
-        translations.get("question_urination", "Have you experienced any changes in urination frequency?"),
-        translations.get("question_contractions", "Have you felt any contractions or tightening?")
+        translations["question_blood_pressure"]
     ]
     
-    # Filter out already asked questions
-    if existing_questions:
-        existing_set = set(existing_questions)
-        available_questions = [q for q in all_questions if q not in existing_set]
-        return available_questions if available_questions else all_questions[:3]
-    
-    return all_questions[:5]
+    return standard_questions
 
 async def analyze_risk_with_rag(responses: List[str], language: str) -> Dict[str, Any]:
     """Analyze risk using RAG + HuggingFace"""
