@@ -124,10 +124,18 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 
 ## Recent Fixes (June 30, 2025)
 
-### Question Consistency Fix (Latest)
+### Netlify Deployment Fix (Latest)
+- ✅ Created proper index.html file for Netlify deployment
+- ✅ Added netlify.toml configuration with routing and security headers
+- ✅ Added _redirects file for proper SPA routing
+- ✅ Enhanced static version with meta tags and SEO optimization
+- ✅ Created comprehensive deployment guide (NETLIFY_DEPLOYMENT.md)
+
+### EMR Report & Question Fixes
+- ✅ Fixed question/answer mismatch in Arabic EMR reports with proper translation mapping  
+- ✅ Enhanced Arabic medical keywords for better medium-risk detection
 - ✅ Fixed inconsistent questions between Arabic and English versions
 - ✅ Disabled AI question generation to ensure standardized medical questions
-- ✅ Implemented consistent 5-question format across all languages
 - ✅ Questions now perfectly match between Arabic and English interfaces
 
 ### Risk Assessment Enhancement  
