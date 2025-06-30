@@ -289,11 +289,27 @@ async def generate_report(session_id: str):
     # Always generate EMR reports in English for medical professionals
     from translator import translator
     
-    # Only translate responses to English, generate proper English medical questions for EMR
+    # Translate responses and get proper English equivalents of the questions asked
     if session['language'] == 'ar':
         translated_responses = [translator.translate_arabic_to_english(response) for response in session['user_responses']]
-        # Generate proper medical questions in English based on standard pregnancy assessment
-        english_questions = generate_english_medical_questions(len(session['questions_asked']))
+        # Get the English versions of the exact same questions that were asked in Arabic
+        english_translations = get_translations('en')
+        arabic_translations = get_translations('ar')
+        
+        # Create mapping from Arabic questions to English questions
+        arabic_to_english_map = {
+            arabic_translations["question_headaches"]: english_translations["question_headaches"],
+            arabic_translations["question_fetal_movement"]: english_translations["question_fetal_movement"],
+            arabic_translations["question_swelling"]: english_translations["question_swelling"],
+            arabic_translations["question_bleeding"]: english_translations["question_bleeding"],
+            arabic_translations["question_blood_pressure"]: english_translations["question_blood_pressure"]
+        }
+        
+        # Translate the actual questions that were asked
+        english_questions = []
+        for arabic_q in session['questions_asked']:
+            english_q = arabic_to_english_map.get(arabic_q, arabic_q)  # fallback to original if not found
+            english_questions.append(english_q)
     else:
         translated_responses = session['user_responses']
         english_questions = session['questions_asked']

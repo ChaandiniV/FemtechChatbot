@@ -254,3 +254,26 @@ class MedicalKnowledgeBase:
         }
         
         return {key: value[language] for key, value in guidelines.items()}
+    
+    def get_arabic_medical_assessment_context(self) -> Dict[str, Any]:
+        """Get comprehensive Arabic medical context for better risk assessment"""
+        return {
+            'high_risk_patterns': {
+                'bleeding': ['نزيف شديد', 'نزيف غزير', 'دم كثير'],
+                'neurological': ['صداع شديد مع تغيرات في الرؤية', 'رؤية ضبابية', 'دوخة شديدة', 'إغماء'],
+                'fetal_concerns': ['عدم حركة الجنين', 'لا حركة للجنين منذ', 'توقف حركة الجنين'],
+                'hypertension': ['ضغط دم عالي جداً', '160', '170', '180', '100', '110'],
+                'respiratory': ['صعوبة في التنفس', 'ضيق تنفس شديد', 'ألم في الصدر']
+            },
+            'medium_risk_patterns': {
+                'mild_headaches': ['صداع خفيف متكرر', 'صداع عدة مرات', 'صداع في المساء'],
+                'reduced_movement': ['حركة أقل من المعتاد', 'قلة حركة الجنين', 'تحسنت بعد الأكل'],
+                'mild_swelling': ['تورم خفيف', 'تورم في نهاية اليوم', 'يتحسن مع الراحة'],
+                'mild_bleeding': ['إفرازات وردية', 'كمية صغيرة', 'استمرت ساعات قليلة'],
+                'borderline_bp': ['138', '140', '145', '88', '90', 'قريب من الحد الأعلى']
+            },
+            'normal_patterns': {
+                'typical_symptoms': ['غثيان خفيف', 'تعب بسيط', 'ألم ظهر خفيف'],
+                'reassuring_signs': ['طبيعي', 'عادي', 'حالة جيدة', 'يزول مع الراحة']
+            }
+        }
