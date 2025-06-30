@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 from datetime import datetime
@@ -20,6 +21,15 @@ from translator import translator
 
 # Initialize FastAPI app
 app = FastAPI(title="GraviLog - Smart Risk Analysis Agent", version="1.0.0")
+
+# Add CORS middleware for production deployment
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Templates and static files
 templates = Jinja2Templates(directory="templates")
@@ -424,4 +434,6 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
+    # Get port from environment variable for production deployment
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
