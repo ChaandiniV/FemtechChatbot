@@ -289,19 +289,20 @@ async def generate_report(session_id: str):
     # Always generate EMR reports in English for medical professionals
     from translator import translator
     
-    # Translate Arabic content to English if needed
+    # Only translate responses to English, generate proper English medical questions for EMR
     if session['language'] == 'ar':
         translated_responses = [translator.translate_arabic_to_english(response) for response in session['user_responses']]
-        translated_questions = [translator.translate_arabic_to_english(question) for question in session['questions_asked']]
+        # Generate proper medical questions in English based on standard pregnancy assessment
+        english_questions = generate_english_medical_questions(len(session['questions_asked']))
     else:
         translated_responses = session['user_responses']
-        translated_questions = session['questions_asked']
+        english_questions = session['questions_asked']
     
     report_data = {
         'language': 'en',  # Always English for EMR
         'timestamp': datetime.now().isoformat(),
         'patient_info': session['patient_info'],
-        'questions': translated_questions,
+        'questions': english_questions,
         'responses': translated_responses,
         'risk_assessment': session['risk_assessment']
     }
@@ -413,6 +414,21 @@ def enhance_risk_assessment_with_pregnancy_week(risk_assessment: Dict[str, Any],
     enhanced_assessment['pregnancy_week'] = pregnancy_week
     
     return enhanced_assessment
+
+def generate_english_medical_questions(num_questions: int) -> List[str]:
+    """Generate proper English medical questions for EMR documentation"""
+    standard_questions = [
+        "How have you been feeling about fetal movement recently?",
+        "Have you noticed any unusual swelling in your face, hands, or feet?",
+        "Have you experienced any vaginal bleeding or spotting?",
+        "Have you had any blood pressure readings or related symptoms?",
+        "Have you experienced any severe headaches or vision changes?",
+        "Are you having any abdominal pain or unusual contractions?",
+        "Have you noticed any changes in your usual pregnancy symptoms?",
+        "Do you have any other symptoms or concerns you'd like to discuss?"
+    ]
+    
+    return standard_questions[:num_questions]
 
 @app.get("/health")
 async def health_check():
