@@ -30,14 +30,14 @@ class RiskAssessment:
             # High-risk indicators in Arabic (score +3 each) - Based on actual user responses
             high_risk_keywords = [
                 'نزيف شديد', 'نزيف غزير', 'نزيفًا مهبليًا غزيرًا', 'نزيف مهبلي غزير',
-                'ألم شديد', 'تقلصات شديدة', 'تقلصات شديدة أسفل البطن',
+                'ألم شديد', 'تقلصات شديدة', 'تقلصات شديدة أسفل البطن', 'ألم شديد في البطن',
                 'لا حركة', 'لم أشعر بحركة', 'لم أشعر بأي حركة للجنين',
-                'رؤية ضبابية', 'تصبح الرؤية ضبابية', 'مشاكل في البصر',
+                'رؤية ضبابية', 'تصبح الرؤية ضبابية', 'مشاكل في البصر', 'رؤيتي ضبابية',
                 'صداع شديد', 'صداع مستمر لا يزول', 'أعاني من صداع مستمر لا يزول',
                 'حمى', 'صعوبة في التنفس', 'ألم في الصدر',
                 'فقدان الوعي', 'دوخة شديدة', 'إغماء',
                 'تورم مفاجئ', 'تورم شديد', 'تورمًا مفاجئًا وشديدًا', 'لاحظت تورماً مفاجئاً وشديداً',
-                'ضغط دم عالي', '160/100', '150/95',
+                'ضغط دم عالي', '160/100', '150/95', '140/', '145/', '155/',
                 'بدأ بشكل مفاجئ', 'منذ البارحة', 'منذ عدة ساعات'
             ]
             
@@ -79,29 +79,30 @@ class RiskAssessment:
                 'heavy bleeding', 'severe bleeding', 'heavy vaginal bleeding',
                 'severe pain', 'severe abdominal pain', 'severe contractions',
                 'no fetal movement', 'no movement felt',
-                'blurry vision', 'vision becomes blurry', 'vision problems',
-                'severe headache', 'persistent headache that won\'t go away',
+                'blurry vision', 'vision is blurry', 'vision becomes blurry', 'vision problems', 'my vision is blurry',
+                'severe headache', 'persistent headache', 'headache that won\'t go away', 'severe headache that won\'t go away',
                 'fever', 'difficulty breathing', 'chest pain',
                 'unconscious', 'fainting', 'severe dizziness',
-                'sudden swelling', 'severe swelling', 'sudden and severe swelling',
-                'high blood pressure', '160/100', '150/95',
-                'started suddenly'
+                'sudden swelling', 'severe swelling', 'sudden and severe swelling', 'feet are swollen',
+                'high blood pressure', '160/', '150/', '140/', '145/', '155/',
+                'started suddenly', 'severe abdominal pain on one side'
             ]
             
             # Medium-risk indicators in English (score +2 each)
             medium_risk_keywords = [
-                'mild headache', 'recurring headache', 'vomiting', 'nausea',
-                'mild swelling', 'less than usual', 'long periods',
-                'vaginal discharge', 'light pink color',
-                'dizziness', 'severe fatigue', 'mild pain',
-                '138/89', 'close to upper limit', 'continuous monitoring',
-                'improves with', 'goes away after'
+                'mild headache', 'recurring headache', 'headaches', 'vomiting', 'nausea',
+                'mild swelling', 'some swelling', 'less than usual', 'long periods',
+                'vaginal discharge', 'light pink color', 'unusual discharge',
+                'dizziness', 'dizzy', 'severe fatigue', 'mild pain',
+                '138/', '135/', '130/', 'close to upper limit', 'continuous monitoring',
+                'improves with', 'goes away after', 'feel dizzy'
             ]
             
             # Low-risk indicators in English (score +1 each)
             low_risk_keywords = [
-                'mild nausea', 'fatigue', 'back pain', 'constipation',
-                'breast tenderness', 'frequent urination', 'normal', 'fine'
+                'mild nausea', 'mild headaches', 'nauseous in the mornings', 'mild back pain',
+                'fatigue', 'back pain', 'constipation', 'breast tenderness', 
+                'frequent urination', 'normal', 'fine', 'bit nauseous', 'feel a bit'
             ]
         
         # Check high-risk first and exclude if found
@@ -136,13 +137,25 @@ class RiskAssessment:
             print(f"Risk factors found: {risk_factors}")
             print(f"=== END DEBUG ===")
         
-        # Determine risk level based on score and content
-        if high_risk_found and risk_score >= 3:
+        # Enhanced risk level determination with specific condition checks
+        
+        # Check for high-risk combinations first
+        preeclampsia_signs = any(keyword in combined_text for keyword in ['severe headache', 'blurry vision', 'vision is blurry', 'swollen']) and \
+                           any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/'])
+        
+        severe_symptoms = any(keyword in combined_text for keyword in ['severe headache', 'severe abdominal pain', 'blurry vision', 'vision is blurry'])
+        
+        high_bp_with_symptoms = any(keyword in combined_text for keyword in ['140/', '145/', '150/']) and \
+                              any(keyword in combined_text for keyword in ['dizzy', 'dizziness', 'severe', 'pain'])
+        
+        if preeclampsia_signs or severe_symptoms or high_bp_with_symptoms or (high_risk_found and risk_score >= 3):
             risk_level = 'High'
         elif risk_score >= 4:  # Multiple medium-risk factors
             risk_level = 'Medium'
-        elif risk_score >= 2:  # Some medium-risk factors
+        elif risk_score >= 2:  # Some medium-risk factors  
             risk_level = 'Medium'
+        elif any(keyword in combined_text for keyword in ['mild', 'nausea', 'back pain']) and not high_risk_found:
+            risk_level = 'Low'  # Explicitly low for common pregnancy symptoms
         else:
             risk_level = 'Low'
         
@@ -208,7 +221,7 @@ class RiskAssessment:
         # Specific condition detection patterns
         conditions = {
             'preeclampsia': {
-                'patterns': ['headache', 'vision', 'swelling', 'blood pressure'],
+                'patterns': ['severe headache', 'blurry vision', 'vision is blurry', 'swollen', '140/', '130/', '135/'],
                 'en': {
                     'explanation': 'Classic symptoms of preeclampsia, a serious pregnancy complication.',
                     'recommendations': '🔴 High Risk - Immediate visit to the ER or OB emergency care.',
