@@ -386,6 +386,10 @@ def get_fallback_questions(language: str, existing_questions: Optional[List[str]
 
 async def analyze_risk_with_rag(responses: List[str], language: str) -> Dict[str, Any]:
     """Analyze risk using RAG + HuggingFace"""
+    print(f"=== ANALYZE_RISK_WITH_RAG DEBUG ===")
+    print(f"Responses received: {responses}")
+    print(f"Language: {language}")
+    
     try:
         # Get relevant medical context using RAG
         context = rag_system.get_relevant_context(responses, language)
@@ -394,12 +398,16 @@ async def analyze_risk_with_rag(responses: List[str], language: str) -> Dict[str
         risk_analysis = await hf_client.analyze_risk(responses, context, language)
         
         if risk_analysis:
+            print(f"HuggingFace analysis succeeded: {risk_analysis}")
             return risk_analysis
     except Exception as e:
         print(f"Error analyzing risk: {e}")
     
     # Fallback to rule-based assessment
-    return risk_assessor.assess_risk(responses, language)
+    print(f"Falling back to rule-based assessment...")
+    result = risk_assessor.assess_risk(responses, language)
+    print(f"Rule-based result: {result}")
+    return result
 
 def enhance_risk_assessment_with_pregnancy_week(risk_assessment: Dict[str, Any], pregnancy_week: int) -> Dict[str, Any]:
     """Enhance risk assessment based on pregnancy week"""

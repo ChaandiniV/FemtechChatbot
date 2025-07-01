@@ -13,13 +13,13 @@ class RiskAssessment:
         # Combine all responses into a single text for analysis
         combined_text = ' '.join(responses).lower()
         
-        # Debug: Print combined text for Arabic debugging
-        if language == 'ar':
-            print(f"=== ARABIC RISK ASSESSMENT DEBUG ===")
-            print(f"Combined text: {combined_text}")
-            print(f"Number of responses: {len(responses)}")
-            print(f"Responses: {responses}")
-            print(f"Language: {language}")
+        # Debug: Print combined text for debugging
+        print(f"=== RISK ASSESSMENT DEBUG START ===")
+        print(f"Combined text: {combined_text}")
+        print(f"Number of responses: {len(responses)}")
+        print(f"Responses: {responses}")
+        print(f"Language: {language}")
+        print(f"=== PROCESSING... ===")
         
         # Initialize risk score
         risk_score = 0
