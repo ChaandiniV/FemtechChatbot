@@ -85,7 +85,7 @@ class RiskAssessment:
                 'unconscious', 'fainting', 'severe dizziness',
                 'sudden swelling', 'severe swelling', 'sudden and severe swelling', 'feet are swollen',
                 'high blood pressure', '160/', '150/', '140/', '145/', '155/',
-                'started suddenly', 'severe abdominal pain on one side'
+                'started suddenly', 'severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side'
             ]
             
             # Medium-risk indicators in English (score +2 each)
@@ -131,24 +131,36 @@ class RiskAssessment:
                     risk_score += 1
                     risk_factors.append(keyword)
         
-        # Debug: Print final risk calculation
-        if language == 'ar':
-            print(f"Final risk score: {risk_score}")
-            print(f"Risk factors found: {risk_factors}")
-            print(f"=== END DEBUG ===")
-        
         # Enhanced risk level determination with specific condition checks
         
         # Check for high-risk combinations first
         preeclampsia_signs = any(keyword in combined_text for keyword in ['severe headache', 'blurry vision', 'vision is blurry', 'swollen']) and \
                            any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/'])
         
+        # Ectopic pregnancy detection (critical in early pregnancy)
+        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side']) and 
+                        any(keyword in combined_text for keyword in ['dizzy', 'feel dizzy', 'dizziness'])) or \
+                       (any(keyword in combined_text for keyword in ['severe abdominal pain', 'severe pain']) and 
+                        any(keyword in combined_text for keyword in ['week 7', 'week 6', 'week 8', 'early pregnancy']))
+        
         severe_symptoms = any(keyword in combined_text for keyword in ['severe headache', 'severe abdominal pain', 'blurry vision', 'vision is blurry'])
         
         high_bp_with_symptoms = any(keyword in combined_text for keyword in ['140/', '145/', '150/']) and \
                               any(keyword in combined_text for keyword in ['dizzy', 'dizziness', 'severe', 'pain'])
         
-        if preeclampsia_signs or severe_symptoms or high_bp_with_symptoms or (high_risk_found and risk_score >= 3):
+        # Debug: Print risk calculation details
+        print(f"=== RISK ASSESSMENT DEBUG ===")
+        print(f"Combined text: {combined_text}")
+        print(f"High risk found: {high_risk_found}")
+        print(f"Final risk score: {risk_score}")
+        print(f"Risk factors found: {risk_factors}")
+        print(f"Ectopic signs detected: {ectopic_signs}")
+        print(f"Preeclampsia signs detected: {preeclampsia_signs}")
+        print(f"Severe symptoms detected: {severe_symptoms}")
+        print(f"High BP with symptoms: {high_bp_with_symptoms}")
+        print(f"=== END DEBUG ===")
+        
+        if ectopic_signs or preeclampsia_signs or severe_symptoms or high_bp_with_symptoms or (high_risk_found and risk_score >= 3):
             risk_level = 'High'
         elif risk_score >= 4:  # Multiple medium-risk factors
             risk_level = 'Medium'
@@ -247,15 +259,15 @@ class RiskAssessment:
                 }
             },
             'ectopic': {
-                'patterns': ['week 7', 'severe abdominal pain', 'one side', 'dizzy', 'الأسبوع 7', 'ألم شديد', 'جانب واحد', 'دوخة'],
+                'patterns': ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'feel dizzy', 'week 7', 'week 6', 'week 8', 'الأسبوع 7', 'ألم شديد في البطن', 'جانب واحد', 'دوخة'],
                 'en': {
-                    'explanation': 'Could indicate ectopic pregnancy, especially in early weeks.',
-                    'recommendations': '🔴 High Risk - Emergency care required.',
+                    'explanation': 'Could indicate ectopic pregnancy, especially dangerous in early weeks (4-12). Combination of one-sided severe abdominal pain and dizziness requires immediate evaluation.',
+                    'recommendations': '🚨 High Risk - Emergency care required immediately. Go to ER now.',
                     'urgent_care_needed': True
                 },
                 'ar': {
-                    'explanation': 'قد تشير إلى حمل خارج الرحم، خاصة في الأسابيع المبكرة.',
-                    'recommendations': '🔴 مخاطر عالية - رعاية طوارئ مطلوبة.',
+                    'explanation': 'قد تشير إلى حمل خارج الرحم، خطير جداً في الأسابيع المبكرة (4-12). مزيج من الألم الشديد في جانب واحد والدوخة يتطلب تقييماً فورياً.',
+                    'recommendations': '🚨 مخاطر عالية - رعاية طوارئ مطلوبة فوراً. اذهب للطوارئ الآن.',
                     'urgent_care_needed': True
                 }
             }
