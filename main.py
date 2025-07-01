@@ -227,7 +227,7 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
     session["current_question_index"] += 1
     
     # Check if we need more questions based on responses
-    if len(session["user_responses"]) >= 3 and len(session["questions_asked"]) < 5:
+    if len(session["user_responses"]) >= 3 and len(session["questions_asked"]) < 6:
         # Generate follow-up questions using RAG with patient context
         patient_context = f"Patient: {session['patient_info']['name']}, Age: {session['patient_info']['age']}, Pregnancy Week: {session['patient_info']['pregnancy_week']}"
         follow_up_questions = await generate_contextual_questions(
@@ -237,11 +237,11 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
         )
         # Only add questions that are not already asked to prevent repetition
         for question in follow_up_questions:
-            if question not in session["questions_asked"] and len(session["questions_asked"]) < 5:
+            if question not in session["questions_asked"] and len(session["questions_asked"]) < 6:
                 session["questions_asked"].append(question)
     
     # Check if assessment is complete
-    if session["current_question_index"] >= len(session["questions_asked"]) or len(session["user_responses"]) >= 5:
+    if session["current_question_index"] >= len(session["questions_asked"]) or len(session["user_responses"]) >= 6:
         session["completed"] = True
         session["phase"] = "completed"
         
@@ -362,6 +362,7 @@ def get_fallback_questions(language: str, existing_questions: Optional[List[str]
         translations["question_swelling"],
         translations["question_bleeding"],
         translations["question_blood_pressure"],
+        translations["question_other_symptoms"],  # 6th question added
         translations["question_nausea"],
         translations["question_fatigue"],
         translations["question_pain"],
@@ -371,9 +372,9 @@ def get_fallback_questions(language: str, existing_questions: Optional[List[str]
         translations["question_contractions"]
     ]
     
-    # If no existing questions, return first 5
+    # If no existing questions, return first 6 (including the new "other symptoms" question)
     if not existing_questions:
-        return all_questions[:5]
+        return all_questions[:6]
     
     # Filter out already asked questions to avoid repetition
     new_questions = []
