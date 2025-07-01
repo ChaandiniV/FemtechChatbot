@@ -148,35 +148,35 @@ class MedicalKnowledgeBase:
         recommendations = {
             'en': {
                 'Low': {
-                    'explanation': 'Your symptoms appear to be normal pregnancy-related changes.',
-                    'recommendations': 'Continue routine prenatal care, maintain healthy lifestyle, and monitor symptoms.',
+                    'explanation': 'These are common pregnancy symptoms due to hormonal changes and ligament stretching.',
+                    'recommendations': '🟢 Low Risk - Monitor at home; routine prenatal care is sufficient.',
                     'urgent_care_needed': False
                 },
                 'Medium': {
-                    'explanation': 'Some symptoms require monitoring and may need medical attention.',
-                    'recommendations': 'Contact your healthcare provider within 24 hours to discuss these symptoms.',
+                    'explanation': 'These symptoms suggest possible complications that may require medical attention.',
+                    'recommendations': '🟡 Medium Risk - Recommend contacting a doctor within 24 hours.',
                     'urgent_care_needed': False
                 },
                 'High': {
-                    'explanation': 'Your symptoms indicate a potentially serious condition requiring immediate attention.',
-                    'recommendations': 'Seek immediate medical care. Contact your OB/GYN or go to the emergency room.',
+                    'explanation': 'These symptoms indicate serious pregnancy complications requiring immediate care.',
+                    'recommendations': '🔴 High Risk - Immediate visit to the ER or OB emergency care required.',
                     'urgent_care_needed': True
                 }
             },
             'ar': {
                 'Low': {
-                    'explanation': 'تبدو الأعراض لديكِ طبيعية ومرتبطة بالحمل.',
-                    'recommendations': 'استمري في المتابعة الدورية للحمل واحرصي على نمط حياة صحي ومراقبة الأعراض.',
+                    'explanation': 'هذه أعراض شائعة في الحمل بسبب التغيرات الهرمونية وتمدد الأربطة.',
+                    'recommendations': '🟢 مخاطر منخفضة - راقبي في المنزل؛ الرعاية الدورية للحمل كافية.',
                     'urgent_care_needed': False
                 },
                 'Medium': {
-                    'explanation': 'بعض الأعراض تتطلب متابعة وقد تحتاج إلى عناية طبية.',
-                    'recommendations': 'اتصلي بمقدم الرعاية الصحية خلال 24 ساعة لمناقشة هذه الأعراض.',
+                    'explanation': 'تشير هذه الأعراض إلى مضاعفات محتملة قد تتطلب رعاية طبية.',
+                    'recommendations': '🟡 مخاطر متوسطة - يُنصح بالاتصال بالطبيب خلال 24 ساعة.',
                     'urgent_care_needed': False
                 },
                 'High': {
-                    'explanation': 'تشير الأعراض لديكِ إلى حالة خطيرة محتملة تتطلب اهتماماً فورياً.',
-                    'recommendations': 'اطلبي الرعاية الطبية الفورية. اتصلي بطبيب النساء أو اذهبي إلى غرفة الطوارئ.',
+                    'explanation': 'تشير هذه الأعراض إلى مضاعفات خطيرة في الحمل تتطلب رعاية فورية.',
+                    'recommendations': '🔴 مخاطر عالية - مطلوب زيارة فورية لغرفة الطوارئ أو طوارئ النساء والولادة.',
                     'urgent_care_needed': True
                 }
             }

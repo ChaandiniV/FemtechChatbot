@@ -235,7 +235,10 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
             [patient_context] + session["user_responses"],
             session["questions_asked"]  # Pass existing questions to avoid repetition
         )
-        session["questions_asked"].extend(follow_up_questions[:2])
+        # Only add questions that are not already asked to prevent repetition
+        for question in follow_up_questions:
+            if question not in session["questions_asked"] and len(session["questions_asked"]) < 5:
+                session["questions_asked"].append(question)
     
     # Check if assessment is complete
     if session["current_question_index"] >= len(session["questions_asked"]) or len(session["user_responses"]) >= 5:
@@ -349,19 +352,36 @@ async def generate_contextual_questions(language: str, previous_responses: Optio
     return get_fallback_questions(language, existing_questions or [])
 
 def get_fallback_questions(language: str, existing_questions: Optional[List[str]] = None) -> List[str]:
-    """Standard medical questions - always returns same 5 questions in same order"""
+    """Standard medical questions - returns unique questions avoiding repetition"""
     translations = get_translations(language)
     
-    # Always return the same 5 core medical questions in the same order for consistency
-    standard_questions = [
+    # Complete pool of medical questions - expanded to prevent repetition
+    all_questions = [
         translations["question_headaches"],
         translations["question_fetal_movement"], 
         translations["question_swelling"],
         translations["question_bleeding"],
-        translations["question_blood_pressure"]
+        translations["question_blood_pressure"],
+        translations["question_nausea"],
+        translations["question_fatigue"],
+        translations["question_pain"],
+        translations["question_appetite"],
+        translations["question_sleep"],
+        translations["question_urination"],
+        translations["question_contractions"]
     ]
     
-    return standard_questions
+    # If no existing questions, return first 5
+    if not existing_questions:
+        return all_questions[:5]
+    
+    # Filter out already asked questions to avoid repetition
+    new_questions = []
+    for question in all_questions:
+        if question not in existing_questions and len(new_questions) < 3:
+            new_questions.append(question)
+    
+    return new_questions
 
 async def analyze_risk_with_rag(responses: List[str], language: str) -> Dict[str, Any]:
     """Analyze risk using RAG + HuggingFace"""
@@ -434,6 +454,20 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    # Get port from environment variable for production deployment
-    port = int(os.environ.get("PORT", 5000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    print("Starting GraviLog FastAPI server...")
+    try:
+        # Get port from environment variable for production deployment
+        port = int(os.environ.get("PORT", 8000))
+        print(f"Server will run on: http://0.0.0.0:{port}")
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=port,
+            reload=False,
+            log_level="info",
+            access_log=True
+        )
+    except Exception as e:
+        print(f"Error starting server: {e}")
+        import traceback
+        traceback.print_exc()

@@ -146,16 +146,17 @@ class RiskAssessment:
         else:
             risk_level = 'Low'
         
-        # Get recommendations from knowledge base
-        recommendations = self.kb.get_recommendations(risk_level, language)
+        # Get contextual recommendations based on specific symptoms
+        contextual_assessment = self._get_contextual_assessment(combined_text, risk_level, language)
         
         return {
             'risk_level': risk_level,
             'risk_score': risk_score,
             'risk_factors': risk_factors,
-            'explanation': recommendations['explanation'],
-            'recommendations': recommendations['recommendations'],
-            'urgent_care_needed': recommendations['urgent_care_needed']
+            'explanation': contextual_assessment['explanation'],
+            'recommendations': contextual_assessment['recommendations'],
+            'urgent_care_needed': contextual_assessment['urgent_care_needed'],
+            'condition_detected': contextual_assessment.get('condition_detected', None)
         }
     
     def check_emergency_symptoms(self, responses: List[str]) -> bool:
@@ -200,6 +201,65 @@ class RiskAssessment:
         patterns['infection_indicators'] = sum(1 for keyword in infection_keywords if keyword in combined_text)
         
         return patterns
+    
+    def _get_contextual_assessment(self, combined_text: str, risk_level: str, language: str) -> Dict[str, Any]:
+        """Provide contextual assessment based on specific symptoms mentioned"""
+        
+        # Specific condition detection patterns
+        conditions = {
+            'preeclampsia': {
+                'patterns': ['headache', 'vision', 'swelling', 'blood pressure'],
+                'en': {
+                    'explanation': 'Classic symptoms of preeclampsia, a serious pregnancy complication.',
+                    'recommendations': '🔴 High Risk - Immediate visit to the ER or OB emergency care.',
+                    'urgent_care_needed': True
+                },
+                'ar': {
+                    'explanation': 'أعراض كلاسيكية لتسمم الحمل، وهو مضاعفة خطيرة في الحمل.',
+                    'recommendations': '🔴 مخاطر عالية - زيارة فورية لغرفة الطوارئ أو طوارئ النساء والولادة.',
+                    'urgent_care_needed': True
+                }
+            },
+            'hyperemesis': {
+                'patterns': ['vomiting', 'three times', 'dehydrated', 'قيء', 'ثلاث مرات', 'جفاف'],
+                'en': {
+                    'explanation': 'Suggests possible hyperemesis gravidarum, which may require medical attention.',
+                    'recommendations': '🟡 Medium Risk - Recommend contacting a doctor within 24 hours.',
+                    'urgent_care_needed': False
+                },
+                'ar': {
+                    'explanation': 'تشير إلى احتمالية القيء المفرط في الحمل، والذي قد يتطلب رعاية طبية.',
+                    'recommendations': '🟡 مخاطر متوسطة - يُنصح بالاتصال بالطبيب خلال 24 ساعة.',
+                    'urgent_care_needed': False
+                }
+            },
+            'ectopic': {
+                'patterns': ['week 7', 'severe abdominal pain', 'one side', 'dizzy', 'الأسبوع 7', 'ألم شديد', 'جانب واحد', 'دوخة'],
+                'en': {
+                    'explanation': 'Could indicate ectopic pregnancy, especially in early weeks.',
+                    'recommendations': '🔴 High Risk - Emergency care required.',
+                    'urgent_care_needed': True
+                },
+                'ar': {
+                    'explanation': 'قد تشير إلى حمل خارج الرحم، خاصة في الأسابيع المبكرة.',
+                    'recommendations': '🔴 مخاطر عالية - رعاية طوارئ مطلوبة.',
+                    'urgent_care_needed': True
+                }
+            }
+        }
+        
+        # Check for specific conditions
+        for condition_name, condition_data in conditions.items():
+            pattern_matches = sum(1 for pattern in condition_data['patterns'] if pattern in combined_text.lower())
+            if pattern_matches >= 2:  # At least 2 patterns match
+                return {
+                    'condition_detected': condition_name,
+                    **condition_data[language]
+                }
+        
+        # Default recommendations based on risk level
+        default_recommendations = self.kb.get_recommendations(risk_level, language)
+        return default_recommendations
     
     def get_detailed_assessment(self, responses: List[str], language: str = 'en') -> Dict[str, Any]:
         """Provide detailed risk assessment with pattern analysis"""
