@@ -85,7 +85,8 @@ class RiskAssessment:
                 'unconscious', 'fainting', 'severe dizziness',
                 'sudden swelling', 'severe swelling', 'sudden and severe swelling', 'feet are swollen',
                 'high blood pressure', '160/', '150/', '140/', '145/', '155/',
-                'started suddenly', 'severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side'
+                'started suddenly', 'severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side',
+                'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side'
             ]
             
             # Medium-risk indicators in English (score +2 each)
@@ -138,7 +139,7 @@ class RiskAssessment:
                            any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/'])
         
         # Ectopic pregnancy detection (critical in early pregnancy)
-        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side']) and 
+        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side']) and 
                         any(keyword in combined_text for keyword in ['dizzy', 'feel dizzy', 'dizziness'])) or \
                        (any(keyword in combined_text for keyword in ['severe abdominal pain', 'severe pain']) and 
                         any(keyword in combined_text for keyword in ['week 7', 'week 6', 'week 8', 'early pregnancy']))
@@ -259,7 +260,7 @@ class RiskAssessment:
                 }
             },
             'ectopic': {
-                'patterns': ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'feel dizzy', 'week 7', 'week 6', 'week 8', 'الأسبوع 7', 'ألم شديد في البطن', 'جانب واحد', 'دوخة'],
+                'patterns': ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side', 'feel dizzy', 'week 7', 'week 6', 'week 8', 'الأسبوع 7', 'ألم شديد في البطن', 'جانب واحد', 'دوخة'],
                 'en': {
                     'explanation': 'Could indicate ectopic pregnancy, especially dangerous in early weeks (4-12). Combination of one-sided severe abdominal pain and dizziness requires immediate evaluation.',
                     'recommendations': '🚨 High Risk - Emergency care required immediately. Go to ER now.',
