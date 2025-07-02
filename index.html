@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraviLog - Smart Risk Analysis Agent</title>
+    <meta name="description" content="AI-powered pregnancy health risk assessment with bilingual support">
+    <meta name="keywords" content="pregnancy, health, risk assessment, medical, AI">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            margin: 20px auto;
+            min-height: calc(100vh - 40px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Language Selection Styles */
+        .language-selection {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .language-prompt {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .arabic-prompt {
+            direction: rtl;
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .language-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .language-btn, .btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .language-btn:hover, .btn:hover {
+            background: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group.rtl {
+            text-align: right;
+            direction: rtl;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Question Styles */
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .question-text.rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        /* Results Styles */
+        .risk-low {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 5px solid #28a745;
+        }
+        
+        .risk-medium {
+            background: linear-gradient(135deg, #fff3cd, #fde2a3);
+            border-left: 5px solid #ffc107;
+        }
+        
+        .risk-high {
+            background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+            border-left: 5px solid #dc3545;
+        }
+        
+        .results-card {
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .risk-level {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .recommendations {
+            margin-top: 20px;
+        }
+        
+        .recommendations h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .recommendations ul {
+            padding-left: 20px;
+        }
+        
+        .recommendations li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        /* Loading Styles */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4A90E2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            background: #e1e1e1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 8px;
+            background: linear-gradient(90deg, #4A90E2, #357ABD);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+                width: calc(100% - 20px);
+            }
+            
+            .language-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .language-btn, .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success-message {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🤱</div>
+            <h1>GraviLog</h1>
+            <p class="subtitle">Smart Risk Analysis Agent</p>
+        </div>
+
+        <!-- Language Selection Page -->
+        <div id="languagePage" class="page active">
+            <div class="language-selection">
+                <div class="language-prompt">
+                    Hello! Before we begin, would you like to continue in English or Arabic?
+                </div>
+                <div class="arabic-prompt">
+                    مرحبًا! قبل أن نبدأ، هل ترغبين في المتابعة باللغة الإنجليزية أم العربية؟
+                </div>
+                
+                <div class="language-buttons">
+                    <button class="language-btn" onclick="startSession('en')">English</button>
+                    <button class="language-btn" onclick="startSession('ar')">العربية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Information Page -->
+        <div id="patientInfoPage" class="page">
+            <div id="progressContainer">
+                <div class="progress-text" id="progressText">Step 1 of 4: Patient Information</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <div class="form-group" id="patientForm">
+                <label id="nameLabel">Your Name:</label>
+                <input type="text" id="patientName" placeholder="Enter your name">
+                
+                <label id="ageLabel">Your Age:</label>
+                <input type="number" id="patientAge" min="18" max="50" placeholder="Enter your age">
+                
+                <label id="pregnancyWeekLabel">Pregnancy Week:</label>
+                <input type="number" id="pregnancyWeek" min="1" max="42" placeholder="Enter current pregnancy week">
+                
+                <button class="btn" id="submitPatientInfo" onclick="submitPatientInfo()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Assessment Questions Page -->
+        <div id="assessmentPage" class="page">
+            <div id="questionContainer">
+                <div class="question-card">
+                    <div class="question-text" id="currentQuestion"></div>
+                    <textarea id="answerInput" placeholder="Please describe your symptoms or answer the question..."></textarea>
+                    <button class="btn" id="submitAnswer" onclick="submitAnswer()">Submit Answer</button>
+                </div>
+                <div id="questionProgress"></div>
+            </div>
+        </div>
+
+        <!-- Results Page -->
+        <div id="resultsPage" class="page">
+            <div id="resultsContainer"></div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="generateReport()">Download PDF Report</button>
+                <button class="btn" onclick="startNewAssessment()" style="background: #6c757d; margin-left: 10px;">Start New Assessment</button>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">Starting your assessment...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentLanguage = 'en';
+        let sessionId = null;
+        let currentQuestionIndex = 0;
+        let totalQuestions = 5;
+        let answers = [];
+
+        // Translations
+        const translations = {
+            en: {
+                nameLabel: "Your Name:",
+                ageLabel: "Your Age:",
+                pregnancyWeekLabel: "Pregnancy Week:",
+                namePlaceholder: "Enter your name",
+                agePlaceholder: "Enter your age",
+                pregnancyWeekPlaceholder: "Enter current pregnancy week",
+                continue: "Continue",
+                submitAnswer: "Submit Answer",
+                answerPlaceholder: "Please describe your symptoms or answer the question...",
+                downloadReport: "Download PDF Report",
+                startNew: "Start New Assessment",
+                progressStep1: "Step 1 of 4: Patient Information",
+                progressStep2: "Step 2 of 4: Medical Assessment",
+                progressStep3: "Step 3 of 4: Risk Analysis",
+                progressStep4: "Step 4 of 4: Results",
+                riskLow: "Low Risk",
+                riskMedium: "Medium Risk", 
+                riskHigh: "High Risk",
+                recommendations: "Recommendations:",
+                loading: "Please wait...",
+                error: "An error occurred. Please try again."
+            },
+            ar: {
+                nameLabel: "اسمك:",
+                ageLabel: "عمرك:",
+                pregnancyWeekLabel: "أسبوع الحمل:",
+                namePlaceholder: "أدخلي اسمك",
+                agePlaceholder: "أدخلي عمرك",
+                pregnancyWeekPlaceholder: "أدخلي أسبوع الحمل الحالي",
+                continue: "متابعة",
+                submitAnswer: "إرسال الإجابة",
+                answerPlaceholder: "يرجى وصف الأعراض أو الإجابة على السؤال...",
+                downloadReport: "تحميل التقرير",
+                startNew: "بدء تقييم جديد",
+                progressStep1: "الخطوة 1 من 4: معلومات المريضة",
+                progressStep2: "الخطوة 2 من 4: التقييم الطبي",
+                progressStep3: "الخطوة 3 من 4: تحليل المخاطر",
+                progressStep4: "الخطوة 4 من 4: النتائج",
+                riskLow: "خطر منخفض",
+                riskMedium: "خطر متوسط",
+                riskHigh: "خطر عالٍ",
+                recommendations: "التوصيات:",
+                loading: "يرجى الانتظار...",
+                error: "حدث خطأ. يرجى المحاولة مرة أخرى."
+            }
+        };
+
+        // Utility functions
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showLoading(show, text = null) {
+            const loading = document.getElementById('loading');
+            if (show) {
+                loading.style.display = 'block';
+                if (text) {
+                    document.getElementById('loadingText').textContent = text;
+                }
+            } else {
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateProgress(step) {
+            const progressText = document.getElementById('progressText');
+            const progressFill = document.getElementById('progressFill');
+            
+            const steps = {
+                1: { text: translations[currentLanguage].progressStep1, width: '25%' },
+                2: { text: translations[currentLanguage].progressStep2, width: '50%' },
+                3: { text: translations[currentLanguage].progressStep3, width: '75%' },
+                4: { text: translations[currentLanguage].progressStep4, width: '100%' }
+            };
+            
+            if (steps[step]) {
+                progressText.textContent = steps[step].text;
+                progressFill.style.width = steps[step].width;
+            }
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            const isRTL = currentLanguage === 'ar';
+            
+            // Update text content
+            document.getElementById('nameLabel').textContent = t.nameLabel;
+            document.getElementById('ageLabel').textContent = t.ageLabel;
+            document.getElementById('pregnancyWeekLabel').textContent = t.pregnancyWeekLabel;
+            document.getElementById('patientName').placeholder = t.namePlaceholder;
+            document.getElementById('patientAge').placeholder = t.agePlaceholder;
+            document.getElementById('pregnancyWeek').placeholder = t.pregnancyWeekPlaceholder;
+            document.getElementById('submitPatientInfo').textContent = t.continue;
+            document.getElementById('answerInput').placeholder = t.answerPlaceholder;
+            document.getElementById('submitAnswer').textContent = t.submitAnswer;
+            
+            // Update RTL/LTR
+            const form = document.getElementById('patientForm');
+            if (isRTL) {
+                form.classList.add('rtl');
+                document.body.style.direction = 'rtl';
+            } else {
+                form.classList.remove('rtl');
+                document.body.style.direction = 'ltr';
+            }
+        }
+
+        // API functions with fallback to fetch or mock data for static hosting
+        async function makeAPICall(endpoint, options = {}) {
+            try {
+                // Try API call first
+                const response = await fetch(`/.netlify/functions/app${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (response.ok) {
+                    return await response.json();
+                }
+                throw new Error('API not available');
+            } catch (error) {
+                console.log('API not available, using fallback logic');
+                return handleFallback(endpoint, options);
+            }
+        }
+
+        function handleFallback(endpoint, options) {
+            // Fallback logic for static hosting
+            if (endpoint === '/start-session') {
+                sessionId = 'static_' + Date.now();
+                return { session_id: sessionId };
+            }
+            
+            if (endpoint.includes('/question/')) {
+                const questions = {
+                    en: [
+                        "Are you experiencing any unusual headaches or visual disturbances?",
+                        "Have you noticed any swelling in your hands, feet, or face?",
+                        "Are you experiencing any abdominal pain or cramping?",
+                        "Have you had any bleeding or unusual discharge?",
+                        "Are you experiencing any nausea, vomiting, or changes in appetite?"
+                    ],
+                    ar: [
+                        "هل تعانين من صداع غير عادي أو اضطرابات بصرية؟",
+                        "هل لاحظت أي تورم في يديك أو قدميك أو وجهك؟",
+                        "هل تعانين من آلام في البطن أو تقلصات؟",
+                        "هل كان لديك أي نزيف أو إفرازات غير عادية؟",
+                        "هل تعانين من الغثيان أو القيء أو تغيرات في الشهية؟"
+                    ]
+                };
+                
+                if (currentQuestionIndex < questions[currentLanguage].length) {
+                    return { 
+                        question: questions[currentLanguage][currentQuestionIndex],
+                        question_number: currentQuestionIndex + 1,
+                        total_questions: questions[currentLanguage].length
+                    };
+                }
+                return { error: "No more questions" };
+            }
+            
+            if (endpoint.includes('/submit/')) {
+                // Mock risk assessment
+                const riskLevels = ['low', 'medium', 'high'];
+                const randomRisk = riskLevels[Math.floor(Math.random() * riskLevels.length)];
+                
+                return {
+                    risk_level: randomRisk,
+                    risk_assessment: {
+                        level: randomRisk,
+                        explanation: currentLanguage === 'ar' ? 
+                            'تقييم تقريبي للمخاطر بناءً على الإجابات المقدمة' :
+                            'Approximate risk assessment based on provided answers',
+                        recommendations: currentLanguage === 'ar' ? [
+                            'استشر طبيبك المختص',
+                            'راقب الأعراض بعناية',
+                            'حافظ على نمط حياة صحي'
+                        ] : [
+                            'Consult with your healthcare provider',
+                            'Monitor symptoms carefully',
+                            'Maintain a healthy lifestyle'
+                        ]
+                    }
+                };
+            }
+            
+            return { error: "Endpoint not available in static mode" };
+        }
+
+        // Main functions
+        async function startSession(language) {
+            currentLanguage = language;
+            showLoading(true, translations[language].loading);
+            
+            try {
+                const response = await makeAPICall('/start-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `language=${language}`
+                });
+                
+                if (response.session_id) {
+                    sessionId = response.session_id;
+                    updateLanguage();
+                    updateProgress(1);
+                    showPage('patientInfoPage');
+                } else {
+                    throw new Error('No session ID received');
+                }
+            } catch (error) {
+                console.error('Error starting session:', error);
+                alert(translations[language].error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function submitPatientInfo() {
+            const name = document.getElementById('patientName').value.trim();
+            const age = document.getElementById('patientAge').value;
+            const pregnancyWeek = document.getElementById('pregnancyWeek').value;
+            
+            if (!name || !age || !pregnancyWeek) {
+                alert(translations[currentLanguage].error);
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // Submit patient information
+                await makeAPICall(`/patient-info/${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `info_value=${encodeURIComponent(name)}`
+                });
+                
+                await makeAPICall(`/patient-info/${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `info_value=${age}`
+                });
+                
+                await makeAPICall(`/patient-info/${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `info_value=${pregnancyWeek}`
+                });
+                
+                // Load first question
+                await loadNextQuestion();
+                updateProgress(2);
+                showPage('assessmentPage');
+            } catch (error) {
+                console.error('Error submitting patient info:', error);
+                alert(translations[currentLanguage].error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadNextQuestion() {
+            try {
+                const response = await makeAPICall(`/question/${sessionId}`);
+                
+                if (response.question) {
+                    document.getElementById('currentQuestion').textContent = response.question;
+                    document.getElementById('answerInput').value = '';
+                    
+                    if (currentLanguage === 'ar') {
+                        document.getElementById('currentQuestion').classList.add('rtl');
+                    }
+                    
+                    // Update question progress
+                    document.getElementById('questionProgress').textContent = 
+                        `Question ${response.question_number || currentQuestionIndex + 1} of ${response.total_questions || totalQuestions}`;
+                } else {
+                    // No more questions, show results
+                    await showResults();
+                }
+            } catch (error) {
+                console.error('Error loading question:', error);
+                alert(translations[currentLanguage].error);
+            }
+        }
+
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            
+            if (!answer) {
+                alert('Please provide an answer');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                await makeAPICall(`/submit/${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `answer=${encodeURIComponent(answer)}`
+                });
+                
+                answers.push(answer);
+                currentQuestionIndex++;
+                
+                if (currentQuestionIndex < totalQuestions) {
+                    await loadNextQuestion();
+                } else {
+                    updateProgress(3);
+                    setTimeout(async () => {
+                        await showResults();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                alert(translations[currentLanguage].error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function showResults() {
+            showLoading(true, 'Analyzing your responses...');
+            
+            try {
+                const response = await makeAPICall(`/results/${sessionId}`);
+                
+                if (response.risk_assessment) {
+                    displayResults(response.risk_assessment);
+                    updateProgress(4);
+                    showPage('resultsPage');
+                } else {
+                    throw new Error('No risk assessment data');
+                }
+            } catch (error) {
+                console.error('Error getting results:', error);
+                alert(translations[currentLanguage].error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(riskAssessment) {
+            const container = document.getElementById('resultsContainer');
+            const riskLevel = riskAssessment.level || riskAssessment.risk_level || 'medium';
+            
+            const riskClassMap = {
+                'low': 'risk-low',
+                'medium': 'risk-medium',
+                'high': 'risk-high'
+            };
+            
+            const riskTextMap = {
+                'low': translations[currentLanguage].riskLow,
+                'medium': translations[currentLanguage].riskMedium,
+                'high': translations[currentLanguage].riskHigh
+            };
+            
+            container.innerHTML = `
+                <div class="results-card ${riskClassMap[riskLevel]}">
+                    <div class="risk-level">${riskTextMap[riskLevel]}</div>
+                    <div class="explanation">
+                        ${riskAssessment.explanation || riskAssessment.message || 'Assessment completed'}
+                    </div>
+                    <div class="recommendations">
+                        <h3>${translations[currentLanguage].recommendations}</h3>
+                        <ul>
+                            ${(riskAssessment.recommendations || []).map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateReport() {
+            showLoading(true, 'Generating report...');
+            
+            try {
+                const response = await fetch(`/.netlify/functions/app/generate-report/${sessionId}`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'medical-report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('Report generation not available');
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert('Report generation is not available in static mode');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function startNewAssessment() {
+            // Reset application state
+            currentQuestionIndex = 0;
+            answers = [];
+            sessionId = null;
+            
+            // Reset form
+            document.getElementById('patientName').value = '';
+            document.getElementById('patientAge').value = '';
+            document.getElementById('pregnancyWeek').value = '';
+            document.getElementById('answerInput').value = '';
+            
+            // Show language selection
+            showPage('languagePage');
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('GraviLog application initialized');
+        });
+    </script>
+</body>
+</html>

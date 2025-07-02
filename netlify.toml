@@ -1,0 +1,79 @@
+[build]
+  command = "cp netlify-requirements.txt requirements.txt && echo 'Build completed'"
+  functions = "netlify/functions"
+  publish = "."
+
+[functions]
+  python_runtime = "python3.9"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+
+# API routes go to serverless function
+[[redirects]]
+  from = "/start-session"
+  to = "/.netlify/functions/app/start-session"
+  status = 200
+
+[[redirects]]
+  from = "/assessment"
+  to = "/.netlify/functions/app/assessment"
+  status = 200
+
+[[redirects]]
+  from = "/patient-info/*"
+  to = "/.netlify/functions/app/patient-info/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/question/*"
+  to = "/.netlify/functions/app/question/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/submit/*"
+  to = "/.netlify/functions/app/submit/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/results/*"
+  to = "/.netlify/functions/app/results/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/generate-report/*"
+  to = "/.netlify/functions/app/generate-report/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/app/health"
+  status = 200
+
+# Catch-all for API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/app/:splat"
+  status = 200
+
+# Frontend routes go to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
