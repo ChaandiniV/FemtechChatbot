@@ -454,6 +454,7 @@ if __name__ == "__main__":
     print("Starting GraviLog FastAPI server...")
     try:
         # Get port from environment variable for production deployment
+        # Use 8000 for Replit, allow PORT override for Render
         port = int(os.environ.get("PORT", 8000))
         print(f"Server will run on: http://0.0.0.0:{port}")
         uvicorn.run(
