@@ -58,6 +58,7 @@
             -webkit-overflow-scrolling: touch;
             scroll-behavior: smooth;
             position: relative;
+            min-height: 0;
         }
         
         .message {
@@ -231,6 +232,34 @@
             margin-bottom: 10px;
         }
         
+        .scroll-to-bottom {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: #4A90E2;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .scroll-to-bottom:hover {
+            background: #357abd;
+            transform: scale(1.1);
+        }
+        
+        .scroll-to-bottom.show {
+            display: flex;
+        }
+        
         .typing-indicator {
             display: none;
             padding: 12px 16px;
@@ -292,6 +321,7 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                max-width: 100%;
             }
             
             .chat-header {
@@ -305,13 +335,16 @@
             
             .chat-messages {
                 flex: 1;
-                overflow-y: auto;
+                overflow-y: scroll;
                 overflow-x: hidden;
                 padding: 15px;
-                padding-bottom: 100px;
+                padding-bottom: 120px;
                 -webkit-overflow-scrolling: touch;
                 scroll-behavior: smooth;
                 position: relative;
+                min-height: 0;
+                max-height: calc(100vh - 160px);
+                height: calc(100vh - 160px);
             }
             
             .chat-input-container {
@@ -325,6 +358,7 @@
                 z-index: 1000;
                 flex-shrink: 0;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                max-width: 100%;
             }
             
             .chat-input {
@@ -418,6 +452,12 @@
             </div>
         </div>
         
+        <button class="scroll-to-bottom" id="scrollToBottom">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 14l5 5 5-5H7z"/>
+            </svg>
+        </button>
+        
         <div class="chat-input-container">
             <form class="chat-input-form" id="chatForm">
                 <textarea 
@@ -450,11 +490,30 @@
         const sendButton = document.getElementById('sendButton');
         const typingIndicator = document.getElementById('typingIndicator');
         const chatForm = document.getElementById('chatForm');
+        const scrollToBottomBtn = document.getElementById('scrollToBottom');
         
         // Auto-resize textarea
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
+        });
+        
+        // Scroll detection for showing/hiding scroll-to-bottom button
+        chatMessages.addEventListener('scroll', function() {
+            const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 100;
+            if (isAtBottom) {
+                scrollToBottomBtn.classList.remove('show');
+            } else {
+                scrollToBottomBtn.classList.add('show');
+            }
+        });
+        
+        // Scroll to bottom button functionality
+        scrollToBottomBtn.addEventListener('click', function() {
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
         });
         
         // Add message to chat
@@ -473,24 +532,31 @@
             
             chatMessages.appendChild(messageDiv);
             
-            // Smooth scroll to bottom with delay for better UX
-            setTimeout(() => {
-                chatMessages.scrollTo({
-                    top: chatMessages.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+            // Force scroll to bottom immediately and with timeout for mobile
+            requestAnimationFrame(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 50);
+                setTimeout(() => {
+                    chatMessages.scrollTo({
+                        top: chatMessages.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            });
         }
         
         // Show typing indicator
         function showTyping() {
             typingIndicator.style.display = 'block';
-            setTimeout(() => {
-                chatMessages.scrollTo({
-                    top: chatMessages.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+            // Force scroll to bottom for mobile
+            requestAnimationFrame(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 50);
+            });
         }
         
         // Hide typing indicator

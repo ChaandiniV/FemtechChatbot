@@ -125,7 +125,9 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 ## Recent Fixes (July 3, 2025)
 
 ### Mobile Interface Optimization & Render Deployment (Latest)
-- ✅ Fixed mobile scrolling issues - chat messages now scroll properly on all devices
+- ✅ CRITICAL FIX: Mobile scrolling issue resolved - users can now see all questions and responses
+- ✅ Added scroll-to-bottom button for easy navigation to latest messages
+- ✅ Enhanced mobile viewport with proper height constraints and overflow handling
 - ✅ Improved mobile keyboard handling with virtual keyboard support
 - ✅ Enhanced touch interface with 44px minimum button sizes
 - ✅ Added smooth scrolling with momentum for better mobile experience

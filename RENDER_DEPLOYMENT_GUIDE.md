@@ -1,7 +1,9 @@
 # 🚀 GraviLog Complete Render Deployment Guide
 
 ## ✅ Mobile-Optimized Features (Latest Updates)
-- **Fixed Mobile Scrolling**: Chat messages now scroll properly on all devices
+- **FIXED: Mobile Scrolling Issue**: Chat messages now scroll properly - users can see all questions and responses
+- **Added Scroll-to-Bottom Button**: Visual indicator and button to easily scroll to latest messages
+- **Enhanced Mobile Viewport**: Fixed height constraints and overflow handling for all devices
 - **Improved Touch Interface**: Better input handling and keyboard support
 - **Enhanced User Experience**: Loading states, smooth animations, and error feedback
 - **ChatGPT-Style Interface**: Modern conversational design with real-time typing indicators
