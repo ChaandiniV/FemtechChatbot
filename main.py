@@ -215,7 +215,7 @@ async def get_current_question(session_id: str):
     
     return {"error": "Invalid session phase"}
 
-@app.post("/answer/{session_id}")
+@app.post("/submit-answer/{session_id}")
 async def submit_answer(session_id: str, answer: str = Form(...)):
     """Submit answer for current medical question"""
     if session_id not in sessions:
@@ -269,9 +269,18 @@ async def submit_answer(session_id: str, answer: str = Form(...)):
         )
         session["risk_assessment"] = risk_assessment
         
-        return {"completed": True, "redirect_to_results": True}
+        translations = get_translations(session["language"])
+        return {
+            "status": "complete",
+            "message": translations.get("assessment_complete", "Assessment complete! Let me analyze your responses.")
+        }
     
-    return {"completed": False, "next_question_available": True}
+    # Continue with next question
+    translations = get_translations(session["language"]) 
+    return {
+        "status": "continue",
+        "message": translations.get("answer_received", "Thank you for your answer.")
+    }
 
 @app.get("/results/{session_id}")
 async def get_results(request: Request, session_id: str):
