@@ -16,6 +16,9 @@
             background: #f8f9fa;
             height: 100vh;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
+            -webkit-overflow-scrolling: touch;
         }
         
         .chat-container {
@@ -109,9 +112,13 @@
         }
         
         .chat-input-container {
-            padding: 20px;
+            padding: 15px;
             border-top: 1px solid #e0e0e0;
             background: white;
+            min-height: 60px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 100;
         }
         
         .chat-input-form {
@@ -130,6 +137,9 @@
             resize: none;
             min-height: 24px;
             max-height: 100px;
+            background: white;
+            -webkit-appearance: none;
+            -webkit-border-radius: 25px;
         }
         
         .chat-input:focus {
@@ -203,6 +213,60 @@
         
         .results-button:hover {
             background: #218838;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .chat-header h1 {
+                font-size: 20px;
+            }
+            
+            .chat-input-container {
+                padding: 10px;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid #e0e0e0;
+                z-index: 1000;
+            }
+            
+            .chat-messages {
+                padding-bottom: 80px;
+            }
+            
+            .chat-input {
+                font-size: 16px;
+                -webkit-appearance: none;
+                border-radius: 25px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+        
+        /* iOS Safari specific fixes */
+        @media screen and (max-width: 768px) {
+            body {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .chat-container {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
         }
         
         /* RTL Support */
@@ -432,8 +496,48 @@
             }
         });
         
+        // Mobile keyboard handling
+        function handleMobileKeyboard() {
+            if (window.innerWidth <= 768) {
+                messageInput.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        document.body.scrollTop = document.body.scrollHeight;
+                        document.documentElement.scrollTop = document.documentElement.scrollHeight;
+                    }, 300);
+                });
+                
+                // Prevent zoom on iOS
+                messageInput.addEventListener('touchstart', function(e) {
+                    messageInput.style.fontSize = '16px';
+                });
+            }
+        }
+        
+        // Ensure input area is always visible on mobile
+        function ensureInputVisible() {
+            if (window.innerWidth <= 768) {
+                const inputContainer = document.querySelector('.chat-input-container');
+                if (inputContainer) {
+                    inputContainer.style.position = 'fixed';
+                    inputContainer.style.bottom = '0';
+                    inputContainer.style.left = '0';
+                    inputContainer.style.right = '0';
+                    inputContainer.style.zIndex = '1000';
+                    
+                    // Add padding to messages container
+                    const messagesContainer = document.querySelector('.chat-messages');
+                    if (messagesContainer) {
+                        messagesContainer.style.paddingBottom = '80px';
+                    }
+                }
+            }
+        }
+        
         // Initialize conversation
         window.addEventListener('load', function() {
+            handleMobileKeyboard();
+            ensureInputVisible();
+            
             setTimeout(() => {
                 showTyping();
                 setTimeout(() => {
@@ -444,6 +548,11 @@
                     addMessage(greeting + '<br><br>' + nameQuestion);
                 }, 1000);
             }, 500);
+        });
+        
+        // Handle window resize for mobile orientation changes
+        window.addEventListener('resize', function() {
+            ensureInputVisible();
         });
     </script>
 </body>

@@ -61,7 +61,9 @@ No secrets required! The app works out of the box with:
 - Looks and feels like ChatGPT
 - Real-time typing indicators
 - Smooth message animations
-- Mobile-responsive design
+- Full mobile-responsive design (iPhone, Android optimized)
+- Fixed mobile keyboard issues
+- Touch-friendly interface with proper input handling
 
 ### Complete Medical Assessment
 - Collects patient information conversationally
