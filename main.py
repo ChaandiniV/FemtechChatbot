@@ -57,9 +57,15 @@ async def assessment_page(request: Request, session_id: str):
         from fastapi.responses import RedirectResponse
         return RedirectResponse("/")
     
-    return templates.TemplateResponse("assessment.html", {
+    session = sessions[session_id]
+    language = session.get('language', 'en')
+    translations_data = get_translations(language)
+    
+    return templates.TemplateResponse("chat_assessment.html", {
         "request": request,
-        "session_id": session_id
+        "session_id": session_id,
+        "language": language,
+        "translations": translations_data
     })
 
 @app.post("/start-session")
@@ -106,9 +112,9 @@ async def submit_patient_info(session_id: str, info_value: str = Form(...)):
         session["patient_info"]["name"] = info_value.strip()
         session["current_patient_info_step"] = 1
         return {
-            "next_question": translations.get("question_age", "What is your age?"),
-            "step": 1,
-            "field": "age"
+            "message": translations.get("question_age", "What is your age?"),
+            "next_step": "patient_info",
+            "step": 1
         }
     elif current_step == 1:  # Age
         try:
@@ -118,9 +124,9 @@ async def submit_patient_info(session_id: str, info_value: str = Form(...)):
             session["patient_info"]["age"] = age
             session["current_patient_info_step"] = 2
             return {
-                "next_question": translations.get("question_pregnancy_week", "What week of pregnancy are you in?"),
-                "step": 2,
-                "field": "pregnancy_week"
+                "message": translations.get("question_pregnancy_week", "What week of pregnancy are you in?"),
+                "next_step": "patient_info",
+                "step": 2
             }
         except ValueError:
             return {"error": translations.get("age_format_error", "Please enter your age as a number")}
@@ -141,9 +147,8 @@ async def submit_patient_info(session_id: str, info_value: str = Form(...)):
             session["questions_asked"] = initial_questions[:3]
             
             return {
-                "patient_info_complete": True,
-                "first_medical_question": session["questions_asked"][0] if session["questions_asked"] else None,
-                "phase": "medical_questions"
+                "message": translations.get("questions_intro", "Great! Now I'll ask you some medical questions."),
+                "next_step": "questions"
             }
         except ValueError:
             return {"error": translations.get("week_format_error", "Please enter the pregnancy week as a number")}

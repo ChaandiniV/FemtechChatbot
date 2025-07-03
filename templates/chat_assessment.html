@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment - GraviLog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #4A90E2, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .chat-header h1 {
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+        
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.ai {
+            justify-content: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.ai .message-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message.user .message-content {
+            background: #4A90E2;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .avatar.ai {
+            background: #4A90E2;
+            color: white;
+        }
+        
+        .avatar.user {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+        }
+        
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            resize: none;
+            min-height: 24px;
+            max-height: 100px;
+        }
+        
+        .chat-input:focus {
+            border-color: #4A90E2;
+        }
+        
+        .send-button {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .send-button:hover {
+            background: #357abd;
+        }
+        
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 70%;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #ccc;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+            30% { transform: scale(1.2); opacity: 1; }
+        }
+        
+        .results-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .results-button:hover {
+            background: #218838;
+        }
+        
+        /* RTL Support */
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .rtl .message.ai {
+            justify-content: flex-end;
+        }
+        
+        .rtl .message.user {
+            justify-content: flex-start;
+        }
+        
+        .rtl .message.ai .message-content {
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 18px;
+        }
+        
+        .rtl .message.user .message-content {
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 18px;
+        }
+    </style>
+</head>
+<body {% if language == 'ar' %}class="rtl"{% endif %}>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>{{ translations.get('app_title', 'GraviLog') }}</h1>
+            <p>{{ translations.get('assessment_subtitle', 'Smart Pregnancy Risk Assessment') }}</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Initial AI greeting will be added here -->
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <form class="chat-input-form" id="chatForm">
+                <textarea 
+                    class="chat-input" 
+                    id="messageInput" 
+                    placeholder="{{ translations.get('type_message', 'Type your message...') }}"
+                    rows="1"
+                ></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = '{{ session_id }}';
+        const language = '{{ language }}';
+        const translations = {{ translations | tojson }};
+        
+        let currentStep = 'patient_info';
+        let patientInfoStep = 'name';
+        let questionIndex = 0;
+        let conversationComplete = false;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const chatForm = document.getElementById('chatForm');
+        
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        
+        // Add message to chat
+        function addMessage(content, isUser = false, showAvatar = true) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const avatarDiv = showAvatar ? `<div class="avatar ${isUser ? 'user' : 'ai'}">${isUser ? 'U' : 'AI'}</div>` : '';
+            const contentDiv = `<div class="message-content">${content}</div>`;
+            
+            if (isUser) {
+                messageDiv.innerHTML = contentDiv + avatarDiv;
+            } else {
+                messageDiv.innerHTML = avatarDiv + contentDiv;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Show typing indicator
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Hide typing indicator
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        // Send message
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+            
+            addMessage(message, true);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            sendButton.disabled = true;
+            showTyping();
+            
+            try {
+                if (currentStep === 'patient_info') {
+                    await handlePatientInfo(message);
+                } else if (currentStep === 'questions') {
+                    await handleQuestionAnswer(message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                hideTyping();
+                addMessage(translations.error_message || 'Sorry, there was an error. Please try again.');
+                sendButton.disabled = false;
+            }
+        }
+        
+        // Handle patient information
+        async function handlePatientInfo(message) {
+            const response = await fetch(`/patient-info/${sessionId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `info_value=${encodeURIComponent(message)}`
+            });
+            
+            const data = await response.json();
+            hideTyping();
+            
+            if (data.next_step === 'questions') {
+                currentStep = 'questions';
+                addMessage(data.message);
+                await loadNextQuestion();
+            } else {
+                addMessage(data.message);
+            }
+            
+            sendButton.disabled = false;
+        }
+        
+        // Handle question answers
+        async function handleQuestionAnswer(message) {
+            const response = await fetch(`/submit-answer/${sessionId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `answer=${encodeURIComponent(message)}`
+            });
+            
+            const data = await response.json();
+            hideTyping();
+            
+            if (data.status === 'complete') {
+                conversationComplete = true;
+                addMessage(data.message + '<br><br><button class="results-button" onclick="viewResults()">' + 
+                         (translations.view_results || 'View Results') + '</button>');
+                sendButton.disabled = true;
+                messageInput.disabled = true;
+            } else {
+                addMessage(data.message);
+                await loadNextQuestion();
+            }
+            
+            sendButton.disabled = false;
+        }
+        
+        // Load next question
+        async function loadNextQuestion() {
+            if (conversationComplete) return;
+            
+            showTyping();
+            const response = await fetch(`/question/${sessionId}`);
+            const data = await response.json();
+            hideTyping();
+            
+            if (data.question) {
+                addMessage(data.question);
+            } else {
+                conversationComplete = true;
+                addMessage((translations.assessment_complete || 'Assessment complete!') + 
+                          '<br><br><button class="results-button" onclick="viewResults()">' + 
+                          (translations.view_results || 'View Results') + '</button>');
+                sendButton.disabled = true;
+                messageInput.disabled = true;
+            }
+        }
+        
+        // View results
+        function viewResults() {
+            window.location.href = `/results/${sessionId}`;
+        }
+        
+        // Form submission
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!sendButton.disabled) {
+                sendMessage(messageInput.value);
+            }
+        });
+        
+        // Enter key handling
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendButton.disabled) {
+                    sendMessage(this.value);
+                }
+            }
+        });
+        
+        // Initialize conversation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                showTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    const greeting = (translations && translations.welcome_message) || 
+                                   'Hello! I\'m your pregnancy health assistant. Let\'s start with some basic information.';
+                    const nameQuestion = (translations && translations.enter_name) || 'What is your name?';
+                    addMessage(greeting + '<br><br>' + nameQuestion);
+                }, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
