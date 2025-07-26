@@ -431,6 +431,27 @@
             border-bottom-left-radius: 4px;
             border-bottom-right-radius: 18px;
         }
+        
+        .patient-info-display {
+            background-color: #f0f8ff;
+            border: 1px solid #d1ecf1;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px 0;
+            font-size: 0.9em;
+            color: #0c5460;
+            font-style: italic;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px 0;
+            font-size: 0.9em;
+            color: #721c24;
+        }
     </style>
 </head>
 <body {% if language == 'ar' %}class="rtl"{% endif %}>
@@ -601,6 +622,17 @@
             const data = await response.json();
             hideTyping();
             
+            // Debug: Log the response to console
+            console.log('Patient info response:', data);
+            
+            if (data.error) {
+                // Handle error response
+                addMessage(`<div class="error-message">${data.error}</div>`);
+                sendButton.disabled = false;
+                sendButton.classList.remove('loading');
+                return;
+            }
+            
             if (data.next_step === 'questions') {
                 currentStep = 'questions';
                 addMessage(data.message);
@@ -623,6 +655,17 @@
             
             const data = await response.json();
             hideTyping();
+            
+            // Debug: Log the response to console
+            console.log('Question answer response:', data);
+            
+            if (data.error) {
+                // Handle error response
+                addMessage(`<div class="error-message">${data.error}</div>`);
+                sendButton.disabled = false;
+                sendButton.classList.remove('loading');
+                return;
+            }
             
             if (data.status === 'complete') {
                 conversationComplete = true;
@@ -648,8 +691,18 @@
             const data = await response.json();
             hideTyping();
             
+            // Debug: Log the question response to console
+            console.log('Question response:', data);
+            
             if (data.question) {
                 addMessage(data.question);
+                
+                // Display patient info if available and we're in medical questions phase
+                if (data.phase === 'medical_questions' && data.patient_info) {
+                    const patientInfo = data.patient_info;
+                    const infoText = `Patient: ${patientInfo.name || 'N/A'}, Age: ${patientInfo.age || 'N/A'}, Pregnancy Week: ${patientInfo.pregnancy_week || 'N/A'}`;
+                    addMessage(`<div class="patient-info-display">${infoText}</div>`, false, false);
+                }
             } else {
                 conversationComplete = true;
                 addMessage((translations.assessment_complete || 'Assessment complete!') + 
