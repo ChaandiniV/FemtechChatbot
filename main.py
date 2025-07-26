@@ -132,10 +132,29 @@ async def submit_patient_info(session_id: str, info_value: str = Form(...)):
             return {"error": translations.get("age_format_error", "Please enter your age as a number")}
     elif current_step == 2:  # Pregnancy week
         try:
-            week = int(info_value.strip())
+            # Clean and parse pregnancy week input
+            cleaned_input = info_value.strip().lower()
+            
+            # Handle common formats: "8th", "8", "8 weeks", "8 week", "8w", etc.
+            import re
+            week_match = re.search(r'(\d+)', cleaned_input)
+            if week_match:
+                week = int(week_match.group(1))
+            else:
+                return {"error": translations.get("week_format_error", "Please enter the pregnancy week as a number (e.g., 8, 8th, 8 weeks)")}
+            
             if week < 1 or week > 42:
                 return {"error": translations.get("week_error", "Please enter a valid pregnancy week between 1 and 42")}
+            
             session["patient_info"]["pregnancy_week"] = week
+            
+            # Debug: Print session info
+            print(f"=== PREGNANCY WEEK DEBUG ===")
+            print(f"Input value: {info_value}")
+            print(f"Cleaned input: {cleaned_input}")
+            print(f"Parsed week: {week}")
+            print(f"Session patient_info: {session['patient_info']}")
+            print(f"=== END DEBUG ===")
             
             # Move to medical questions phase
             session["phase"] = "medical_questions"
@@ -150,8 +169,9 @@ async def submit_patient_info(session_id: str, info_value: str = Form(...)):
                 "message": translations.get("questions_intro", "Great! Now I'll ask you some medical questions."),
                 "next_step": "questions"
             }
-        except ValueError:
-            return {"error": translations.get("week_format_error", "Please enter the pregnancy week as a number")}
+        except Exception as e:
+            print(f"Error parsing pregnancy week: {e}")
+            return {"error": translations.get("week_format_error", "Please enter the pregnancy week as a number (e.g., 8, 8th, 8 weeks)")}
 
 @app.get("/question/{session_id}")
 async def get_current_question(session_id: str):
@@ -201,6 +221,12 @@ async def get_current_question(session_id: str):
         
         if current_idx >= len(session["questions_asked"]):
             return {"completed": True, "message": "Assessment completed"}
+        
+        # Debug: Print patient info being sent
+        print(f"=== QUESTION ENDPOINT DEBUG ===")
+        print(f"Session patient_info: {session['patient_info']}")
+        print(f"Pregnancy week value: {session['patient_info'].get('pregnancy_week')}")
+        print(f"=== END DEBUG ===")
         
         return {
             "phase": "medical_questions",

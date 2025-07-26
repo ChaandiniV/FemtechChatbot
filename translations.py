@@ -30,7 +30,7 @@ def get_translations(language: str) -> Dict[str, str]:
             'age_error': 'Please enter a valid age between 12 and 60',
             'age_format_error': 'Please enter your age as a number',
             'week_error': 'Please enter a valid pregnancy week between 1 and 42',
-            'week_format_error': 'Please enter the pregnancy week as a number',
+            'week_format_error': 'Please enter the pregnancy week as a number (e.g., 8, 8th, 8 weeks)',
             'patient_info_title': 'Patient Information',
             'medical_questions_title': 'Medical Assessment',
             'question_headaches': 'Have you experienced headaches or blurry vision this week?',
@@ -52,7 +52,8 @@ def get_translations(language: str) -> Dict[str, str]:
             'loading_questions': 'Loading medical questions...',
             'next_button': 'Next',
             'next_question_button': 'Next Question',
-            'complete_button': 'Complete Assessment'
+            'complete_button': 'Complete Assessment',
+            'error_message': 'Sorry, there was an error. Please try again.'
         },
         'ar': {
             'selected_language': 'اللغة المختارة',
@@ -80,7 +81,7 @@ def get_translations(language: str) -> Dict[str, str]:
             'age_error': 'يرجى إدخال عمر صحيح بين 12 و 60 سنة',
             'age_format_error': 'يرجى إدخال عمرك كرقم',
             'week_error': 'يرجى إدخال أسبوع حمل صحيح بين 1 و 42',
-            'week_format_error': 'يرجى إدخال أسبوع الحمل كرقم',
+            'week_format_error': 'يرجى إدخال أسبوع الحمل كرقم (مثال: 8، الأسبوع 8، 8 أسابيع)',
             'patient_info_title': 'معلومات المريضة',
             'medical_questions_title': 'التقييم الطبي',
             'question_headaches': 'هل عانيتِ من صداع أو رؤية ضبابية هذا الأسبوع؟',
@@ -102,7 +103,8 @@ def get_translations(language: str) -> Dict[str, str]:
             'loading_questions': 'جاري تحميل الأسئلة الطبية...',
             'next_button': 'التالي',
             'next_question_button': 'السؤال التالي',
-            'complete_button': 'إنهاء التقييم'
+            'complete_button': 'إنهاء التقييم',
+            'error_message': 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
         }
     }
     
