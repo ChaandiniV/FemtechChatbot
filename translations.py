@@ -1,8 +1,9 @@
-from typing import Dict, Any
+from typing import Dict
+
 
 def get_translations(language: str) -> Dict[str, str]:
     """Get translations for the specified language"""
-    
+
     translations = {
         'en': {
             'selected_language': 'Selected Language',
@@ -107,22 +108,22 @@ def get_translations(language: str) -> Dict[str, str]:
             'error_message': 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
         }
     }
-    
+
     return translations.get(language, translations['en'])
 
 def get_language_name(language_code: str) -> str:
     """Get the display name for a language code"""
-    
+
     language_names = {
         'en': 'English',
         'ar': 'العربية'
     }
-    
+
     return language_names.get(language_code, 'English')
 
 def get_medical_terms(language: str) -> Dict[str, str]:
     """Get medical terms translations"""
-    
+
     medical_terms = {
         'en': {
             'preeclampsia': 'Preeclampsia',
@@ -149,12 +150,12 @@ def get_medical_terms(language: str) -> Dict[str, str]:
             'intrauterine_growth_restriction': 'تقييد النمو داخل الرحم'
         }
     }
-    
+
     return medical_terms.get(language, medical_terms['en'])
 
 def get_risk_level_colors() -> Dict[str, str]:
     """Get color codes for risk levels"""
-    
+
     return {
         'Low': '#28a745',    # Green
         'Medium': '#ffc107', # Yellow/Orange
@@ -163,9 +164,9 @@ def get_risk_level_colors() -> Dict[str, str]:
 
 def format_rtl_text(text: str, language: str) -> str:
     """Format text for RTL languages if needed"""
-    
+
     if language == 'ar':
         # Add RTL formatting for Arabic text
         return f'<div dir="rtl" style="text-align: right;">{text}</div>'
-    
+
     return text
