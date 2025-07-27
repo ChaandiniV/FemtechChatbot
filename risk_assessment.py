@@ -21,7 +21,7 @@ class RiskAssessment:
         print(f"Language: {language}")
         print(f"=== PROCESSING... ===")
         
-        # Initialize risk score
+        # Initialize risk score and tracking variables
         risk_score = 0
         risk_factors = []
         
@@ -91,19 +91,23 @@ class RiskAssessment:
             
             # Medium-risk indicators in English (score +2 each)
             medium_risk_keywords = [
-                'mild headache', 'recurring headache', 'headaches', 'vomiting', 'nausea',
-                'mild swelling', 'some swelling', 'less than usual', 'long periods',
-                'vaginal discharge', 'light pink color', 'unusual discharge',
-                'dizziness', 'dizzy', 'severe fatigue', 'mild pain',
-                '138/', '135/', '130/', 'close to upper limit', 'continuous monitoring',
-                'improves with', 'goes away after', 'feel dizzy'
+                'recurring headache', 'persistent headache', 'headaches that won\'t go away',
+                'persistent vomiting', 'vomiting more than 3 times', 'severe nausea',
+                'moderate swelling', 'swelling that doesn\'t improve', 'sudden swelling',
+                'decreased fetal movement', 'less movement than usual', 'concerning movement',
+                'unusual discharge', 'pink discharge', 'bloody discharge',
+                'persistent dizziness', 'severe dizziness', 'fainting spells',
+                'elevated blood pressure', '135/', '138/', 'close to upper limit',
+                'gestational diabetes symptoms', 'excessive thirst'
             ]
             
             # Low-risk indicators in English (score +1 each)
             low_risk_keywords = [
-                'mild nausea', 'mild headaches', 'nauseous in the mornings', 'mild back pain',
-                'fatigue', 'back pain', 'constipation', 'breast tenderness', 
-                'frequent urination', 'normal', 'fine', 'bit nauseous', 'feel a bit'
+                'mild nausea', 'mild headache', 'occasional headache', 'mild back pain',
+                'normal fatigue', 'tired', 'back pain', 'constipation', 'breast tenderness', 
+                'frequent urination', 'normal', 'fine', 'bit nauseous', 'feel a bit',
+                'mild swelling', 'some swelling', 'swelling at end of day',
+                'nausea', 'headache', 'dizzy', 'mild pain'
             ]
         
         # Check high-risk first and exclude if found
@@ -116,38 +120,42 @@ class RiskAssessment:
                 if language == 'ar':
                     print(f"Found high-risk Arabic keyword: {keyword}")
         
-        # Only check medium-risk if no high-risk symptoms found
-        if not high_risk_found:
-            for keyword in medium_risk_keywords:
-                if keyword in combined_text:
-                    risk_score += 2
-                    risk_factors.append(keyword)
-                    if language == 'ar':
-                        print(f"Found medium-risk Arabic keyword: {keyword}")
+        # Check medium-risk symptoms (allow even if high-risk found for comprehensive scoring)
+        medium_risk_found = False
+        for keyword in medium_risk_keywords:
+            if keyword in combined_text:
+                risk_score += 2
+                risk_factors.append(keyword)
+                medium_risk_found = True
+                if language == 'ar':
+                    print(f"Found medium-risk Arabic keyword: {keyword}")
+                elif language == 'en':
+                    print(f"Found medium-risk English keyword: {keyword}")
         
-        # Add low-risk factors only if no high-risk found
-        if not high_risk_found:
+        # Add low-risk factors only if no high or medium risk found
+        if not high_risk_found and not medium_risk_found:
             for keyword in low_risk_keywords:
                 if keyword in combined_text and keyword not in ' '.join(risk_factors):
                     risk_score += 1
                     risk_factors.append(keyword)
+                    print(f"Found low-risk keyword: {keyword}")
         
         # Enhanced risk level determination with specific condition checks
         
         # Check for high-risk combinations first
-        preeclampsia_signs = any(keyword in combined_text for keyword in ['severe headache', 'blurry vision', 'vision is blurry', 'swollen']) and \
-                           any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/'])
+        preeclampsia_signs = any(keyword in combined_text for keyword in ['severe headache', 'blurry vision', 'vision is blurry', 'تصبح الرؤية ضبابية', 'رؤية ضبابية', 'swollen', 'تورم']) and \
+                           any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/', '160/', 'high blood pressure', 'ضغط دم عالي'])
         
         # Ectopic pregnancy detection (critical in early pregnancy)
-        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side']) and 
-                        any(keyword in combined_text for keyword in ['dizzy', 'feel dizzy', 'dizziness'])) or \
-                       (any(keyword in combined_text for keyword in ['severe abdominal pain', 'severe pain']) and 
-                        any(keyword in combined_text for keyword in ['week 7', 'week 6', 'week 8', 'early pregnancy']))
+        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side', 'ألم شديد في البطن', 'ألم في جانب واحد']) and 
+                        any(keyword in combined_text for keyword in ['dizzy', 'feel dizzy', 'dizziness', 'دوخة', 'أشعر بدوخة'])) or \
+                       (any(keyword in combined_text for keyword in ['severe abdominal pain', 'severe pain', 'ألم شديد']) and 
+                        any(keyword in combined_text for keyword in ['week 7', 'week 6', 'week 8', 'early pregnancy', 'الأسبوع 7', 'الأسبوع 6', 'الأسبوع 8']))
         
-        severe_symptoms = any(keyword in combined_text for keyword in ['severe headache', 'severe abdominal pain', 'blurry vision', 'vision is blurry'])
+        severe_symptoms = any(keyword in combined_text for keyword in ['severe headache', 'severe abdominal pain', 'blurry vision', 'vision is blurry', 'صداع شديد', 'ألم شديد', 'رؤية ضبابية'])
         
-        high_bp_with_symptoms = any(keyword in combined_text for keyword in ['140/', '145/', '150/']) and \
-                              any(keyword in combined_text for keyword in ['dizzy', 'dizziness', 'severe', 'pain'])
+        high_bp_with_symptoms = any(keyword in combined_text for keyword in ['140/', '145/', '150/', '160/', 'high blood pressure', 'ضغط دم عالي']) and \
+                              any(keyword in combined_text for keyword in ['dizzy', 'dizziness', 'severe', 'pain', 'headache', 'دوخة', 'صداع', 'ألم'])
         
         # Debug: Print risk calculation details
         print(f"=== RISK ASSESSMENT DEBUG ===")
@@ -161,16 +169,33 @@ class RiskAssessment:
         print(f"High BP with symptoms: {high_bp_with_symptoms}")
         print(f"=== END DEBUG ===")
         
-        if ectopic_signs or preeclampsia_signs or severe_symptoms or high_bp_with_symptoms or (high_risk_found and risk_score >= 3):
+        # Clear and logical risk level determination
+        # Priority 1: Critical emergency conditions
+        if ectopic_signs or preeclampsia_signs or severe_symptoms or high_bp_with_symptoms:
             risk_level = 'High'
-        elif risk_score >= 4:  # Multiple medium-risk factors
-            risk_level = 'Medium'
-        elif risk_score >= 2:  # Some medium-risk factors  
-            risk_level = 'Medium'
-        elif any(keyword in combined_text for keyword in ['mild', 'nausea', 'back pain']) and not high_risk_found:
-            risk_level = 'Low'  # Explicitly low for common pregnancy symptoms
+            print(f"HIGH RISK - Critical condition detected")
+        
+        # Priority 2: High-risk keywords found
+        elif high_risk_found:
+            risk_level = 'High'
+            print(f"HIGH RISK - High-risk keywords detected: {[kw for kw in risk_factors if any(hr in kw for hr in high_risk_keywords)]}")
+        
+        # Priority 3: Medium-risk assessment
+        elif medium_risk_found:
+            if risk_score >= 4:  # Multiple medium-risk factors
+                risk_level = 'Medium'
+                print(f"MEDIUM RISK - Multiple factors, score: {risk_score}")
+            elif risk_score >= 2:  # Some medium-risk factors
+                risk_level = 'Medium'
+                print(f"MEDIUM RISK - Medium factors detected, score: {risk_score}")
+            else:
+                risk_level = 'Low'
+                print(f"LOW RISK - Mild symptoms, score: {risk_score}")
+        
+        # Priority 4: Low-risk or normal pregnancy symptoms
         else:
             risk_level = 'Low'
+            print(f"LOW RISK - Normal pregnancy symptoms or no significant concerns, score: {risk_score}")
         
         # Get contextual recommendations based on specific symptoms
         contextual_assessment = self._get_contextual_assessment(combined_text, risk_level, language)

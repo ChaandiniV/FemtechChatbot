@@ -176,13 +176,17 @@ class MedicalKnowledgeBase:
                 },
                 'High': {
                     'explanation': 'تشير هذه الأعراض إلى مضاعفات خطيرة في الحمل تتطلب رعاية فورية.',
-                    'recommendations': '🔴 مخاطر عالية - مطلوب زيارة فورية لغرفة الطوارئ أو طوارئ النساء والولادة.',
+                    'recommendations': '🔴 مخاطر عالية - زيارة فورية لغرفة الطوارئ أو طوارئ النساء والولادة مطلوبة.',
                     'urgent_care_needed': True
                 }
             }
         }
         
-        return recommendations[language][risk_level]
+        return recommendations.get(language, recommendations['en']).get(risk_level, {
+            'explanation': 'Unable to determine specific risk assessment.',
+            'recommendations': 'Please consult with your healthcare provider.',
+            'urgent_care_needed': False
+        })
     
     def get_questions_by_category(self, category: str, language: str = 'en') -> List[str]:
         """Get medical questions by category"""
