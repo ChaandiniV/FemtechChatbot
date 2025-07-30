@@ -14,9 +14,9 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 
 ### Backend Architecture
 - **Core Framework**: Python 3.11 with FastAPI for high-performance API endpoints
-- **AI Integration**: Hugging Face models for contextual medical question generation
-- **RAG System**: TF-IDF based retrieval system for medical knowledge augmentation
-- **Risk Assessment**: Hybrid approach combining AI-driven analysis with rule-based fallback
+- **AI Integration**: Google Gemini 2.5-flash for contextual medical question generation
+- **RAG System**: Custom keyword-based retrieval system for medical knowledge augmentation
+- **Risk Assessment**: Hybrid approach combining Gemini AI analysis with rule-based fallback
 - **Report Generation**: PDF report creation using ReportLab library
 - **Internationalization**: Full bilingual support (English/Arabic) with RTL text handling
 
@@ -43,10 +43,10 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 - **Knowledge Base**: Structured pregnancy symptom categorization and risk indicators
 - **Language Support**: Bilingual context retrieval with cultural sensitivity
 
-### 4. Hugging Face Client (`huggingface_client.py`)
-- **Models**: Hugging Face Inference API for text generation and analysis
+### 4. LlamaIndex + Gemini Client (`core/llm_client.py`)
+- **Models**: Google Gemini 2.5-flash for text generation and analysis
 - **Approach**: Dynamic question generation based on retrieved medical context
-- **Fallback**: Template-based question generation when API is unavailable
+- **RAG System**: Custom SimpleRAGRetriever for efficient medical knowledge retrieval
 - **Risk Analysis**: AI-powered risk assessment with rule-based fallback
 
 ### 5. Report Generator (`report_generator.py`)
@@ -74,14 +74,14 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 
 ### Core Libraries
 - **FastAPI**: High-performance web framework for API endpoints
-- **Hugging Face Transformers**: AI models for text generation and analysis
-- **Scikit-learn**: TF-IDF vectorization for RAG implementation
+- **Google Gemini**: Free AI models for text generation and analysis
+- **Custom RAG**: Keyword-based retrieval for medical knowledge
 - **ReportLab**: PDF generation for medical reports
 - **Jinja2**: Template engine for server-side rendering
 
 ### AI Services
-- **Hugging Face Inference API**: Primary service for conversational AI and medical analysis
-- **Models**: DialoGPT-medium for text generation, RoBERTa for classification
+- **Google Gemini API**: Primary service for conversational AI and medical analysis
+- **Models**: Gemini 2.5-flash for text generation and medical risk assessment
 - **Fallback**: Template-based question generation and rule-based assessment when API unavailable
 
 ### Infrastructure
@@ -98,7 +98,7 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 - **Run Command**: `python main.py` (FastAPI with Uvicorn)
 
 ### Environment Setup
-- **API Keys**: Optional Hugging Face API key for enhanced model access
+- **API Keys**: Required GEMINI_API_KEY for AI-powered features (free from Google AI Studio)
 - **Configuration**: FastAPI server configuration for production deployment
 - **Workflows**: Single FastAPI server workflow for optimal performance
 
@@ -122,7 +122,25 @@ GraviLog is a bilingual (English/Arabic) pregnancy health risk assessment applic
 - **Features**: Basic rule-based assessment, bilingual UI
 - **Limitations**: No AI features, no PDF generation
 
-## Recent Fixes (July 3, 2025)
+## Recent Updates (July 30, 2025)
+
+### Complete LlamaIndex + Google Gemini Migration (Latest)
+- ✅ MAJOR ARCHITECTURE OVERHAUL: Migrated from Hugging Face to LlamaIndex + Google Gemini
+- ✅ Free AI System: Now uses free Google Gemini API instead of paid OpenAI
+- ✅ Simplified RAG System: Custom keyword-based retrieval without complex embeddings
+- ✅ Clean Project Structure: Organized code into core/ directory
+- ✅ Removed Dependencies: Eliminated scikit-learn, transformers, torch for lighter footprint
+- ✅ Error-Free Operation: Fixed all LlamaIndex compatibility issues
+- ✅ Maintained Features: Full bilingual support, AI question generation, PDF reports
+- ✅ Enhanced Fallbacks: Robust fallback to rule-based assessment when needed
+
+### System Architecture Update
+- **AI Engine**: Google Gemini 2.5-flash for question generation and risk assessment
+- **RAG System**: Custom SimpleRAGRetriever for medical knowledge retrieval
+- **Knowledge Base**: Structured medical data optimized for pregnancy health
+- **Deployment**: FastAPI server on port 8000 with Gemini API integration
+
+## Previous Fixes (July 3, 2025)
 
 ### Mobile Interface Optimization & Render Deployment (Latest)
 - ✅ CRITICAL FIX: Mobile scrolling issue resolved - users can now see all questions and responses

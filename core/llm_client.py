@@ -8,13 +8,7 @@ from typing import List, Dict, Any, Optional
 
 from google import genai
 from google.genai import types
-from llama_index.core import Document, VectorStoreIndex, StorageContext
-from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.core.embeddings import BaseEmbedding
-from llama_index.core.llms import LLM
-from llama_index.core.settings import Settings
+# Simplified imports - no complex LlamaIndex dependencies needed
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -44,30 +38,36 @@ class GeminiClient:
             logger.error(f"Gemini generation error: {e}")
             return ""
 
-class SimpleEmbedding(BaseEmbedding):
-    """Simple embedding for LlamaIndex without external dependencies"""
+class SimpleRAGRetriever:
+    """Simple retrieval system without complex embeddings"""
     
-    def __init__(self, embed_dim: int = 384):
-        super().__init__()
-        self._embed_dim = embed_dim
+    def __init__(self, knowledge_base: List[Dict]):
+        self.knowledge = knowledge_base
         
-    def _get_query_embedding(self, query: str) -> List[float]:
-        # Simple hash-based embedding for demonstration
-        import hashlib
-        hash_obj = hashlib.md5(query.encode())
-        # Convert to float vector
-        hash_bytes = hash_obj.digest()
-        embedding = [float(b) / 255.0 for b in hash_bytes[:self._embed_dim]]
-        # Pad if needed
-        while len(embedding) < self._embed_dim:
-            embedding.append(0.0)
-        return embedding[:self._embed_dim]
-    
-    def _get_text_embedding(self, text: str) -> List[float]:
-        return self._get_query_embedding(text)
-    
-    async def _aget_query_embedding(self, query: str) -> List[float]:
-        return self._get_query_embedding(query)
+    def retrieve(self, query: str, top_k: int = 3) -> List[str]:
+        """Simple keyword-based retrieval"""
+        query_lower = query.lower()
+        scored_items = []
+        
+        for item in self.knowledge:
+            score = 0
+            # Check symptoms
+            for symptom in item.get('symptoms', []):
+                if symptom.lower() in query_lower:
+                    score += 3
+            
+            # Check category and description
+            if item.get('category', '').lower() in query_lower:
+                score += 2
+            if any(word in query_lower for word in item.get('description', '').lower().split()):
+                score += 1
+                
+            if score > 0:
+                scored_items.append((score, item))
+        
+        # Sort by score and return top results
+        scored_items.sort(key=lambda x: x[0], reverse=True)
+        return [item[1] for item in scored_items[:top_k]]
 
 class MedicalRAGSystem:
     """LlamaIndex-based RAG system for medical knowledge"""
@@ -80,39 +80,15 @@ class MedicalRAGSystem:
         self._setup_index()
         
     def _setup_index(self):
-        """Setup LlamaIndex with medical knowledge"""
+        """Setup simple RAG system with medical knowledge"""
         try:
-            # Create documents from medical knowledge
-            documents = []
-            for item in self.knowledge:
-                content = f"Category: {item.get('category', '')}\n"
-                content += f"Symptoms: {', '.join(item.get('symptoms', []))}\n"
-                content += f"Risk Level: {item.get('risk_level', '')}\n"
-                content += f"Description: {item.get('description', '')}"
-                
-                documents.append(Document(text=content, metadata=item))
-            
-            # Setup simple embedding and disable LLM for index creation
-            Settings.embed_model = SimpleEmbedding()
-            Settings.llm = None  # Disable default LLM to avoid OpenAI requirement
-            
-            # Create index
-            node_parser = SimpleNodeParser.from_defaults(chunk_size=512)
-            nodes = node_parser.get_nodes_from_documents(documents)
-            
-            storage_context = StorageContext.from_defaults()
-            self.index = VectorStoreIndex(nodes, storage_context=storage_context)
-            
-            # Create simple retriever (not query engine to avoid LLM requirement)
-            self.retriever = VectorIndexRetriever(index=self.index, similarity_top_k=3)
-            self.query_engine = None  # We'll use retriever directly
-            
+            # Use simple keyword-based retrieval instead of complex embeddings
+            self.retriever = SimpleRAGRetriever(self.knowledge)
             logger.info("RAG system initialized successfully")
             
         except Exception as e:
             logger.error(f"Error setting up RAG system: {e}")
-            self.index = None
-            self.query_engine = None
+            self.retriever = None
     
     def retrieve_context(self, query: str) -> str:
         """Retrieve relevant medical context"""
@@ -120,17 +96,17 @@ class MedicalRAGSystem:
             return "Medical knowledge base not available"
             
         try:
-            # Use retriever directly to get relevant nodes
-            nodes = self.retriever.retrieve(query)
-            if nodes:
-                # Combine text from top nodes
+            # Use simple retriever to get relevant knowledge
+            items = self.retriever.retrieve(query)
+            if items:
                 context_parts = []
-                for node in nodes[:3]:  # Top 3 results
-                    if hasattr(node, 'node') and hasattr(node.node, 'text'):
-                        context_parts.append(node.node.text)
-                    elif hasattr(node, 'text'):
-                        context_parts.append(node.text)
-                return "\n".join(context_parts)
+                for item in items:
+                    context = f"Category: {item.get('category', '')}\n"
+                    context += f"Risk Level: {item.get('risk_level', '')}\n"
+                    context += f"Symptoms: {', '.join(item.get('symptoms', []))}\n"
+                    context += f"Description: {item.get('description', '')}"
+                    context_parts.append(context)
+                return "\n\n".join(context_parts)
             return "No relevant medical context found"
         except Exception as e:
             logger.error(f"Context retrieval error: {e}")
