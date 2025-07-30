@@ -11,7 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from translator import translator
+# Removed old translator import
 
 class ReportGenerator:
     def __init__(self):

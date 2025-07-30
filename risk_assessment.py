@@ -1,332 +1,82 @@
-import json
-import re
+"""
+Rule-based risk assessment for pregnancy health
+Fallback when AI systems are unavailable
+"""
+import logging
 from typing import Dict, List, Any
-from medical_knowledge import MedicalKnowledgeBase
+from medical_knowledge import get_risk_keywords
+
+logger = logging.getLogger(__name__)
 
 class RiskAssessment:
-    def __init__(self, knowledge_base: MedicalKnowledgeBase):
-        self.kb = knowledge_base
+    """Rule-based risk assessment using keyword matching"""
+    
+    def __init__(self):
+        self.risk_keywords = get_risk_keywords()
         
-    def assess_risk(self, responses: List[str], language: str = 'en') -> Dict[str, Any]:
-        """Assess risk based on user responses using rule-based logic as fallback"""
+    def assess_risk(self, responses: List[Dict], language: str = "en") -> Dict[str, Any]:
+        """Assess pregnancy risk based on responses using rule-based logic"""
         
-        # Combine all responses into a single text for analysis
-        combined_text = ' '.join(responses).lower()
-        
-        # Debug: Print combined text for debugging
-        print(f"=== RISK ASSESSMENT DEBUG START ===")
-        print(f"Combined text: {combined_text}")
-        print(f"Number of responses: {len(responses)}")
-        print(f"Responses: {responses}")
-        print(f"Language: {language}")
-        print(f"=== PROCESSING... ===")
-        
-        # Initialize risk score and tracking variables
         risk_score = 0
         risk_factors = []
+        detected_conditions = []
         
-        # Define bilingual keywords for risk assessment
-        if language == 'ar':
-            # High-risk indicators in Arabic (score +3 each) - Based on actual user responses
-            high_risk_keywords = [
-                'نزيف شديد', 'نزيف غزير', 'نزيفًا مهبليًا غزيرًا', 'نزيف مهبلي غزير',
-                'ألم شديد', 'تقلصات شديدة', 'تقلصات شديدة أسفل البطن', 'ألم شديد في البطن',
-                'لا حركة', 'لم أشعر بحركة', 'لم أشعر بأي حركة للجنين',
-                'رؤية ضبابية', 'تصبح الرؤية ضبابية', 'مشاكل في البصر', 'رؤيتي ضبابية',
-                'صداع شديد', 'صداع مستمر لا يزول', 'أعاني من صداع مستمر لا يزول',
-                'حمى', 'صعوبة في التنفس', 'ألم في الصدر',
-                'فقدان الوعي', 'دوخة شديدة', 'إغماء',
-                'تورم مفاجئ', 'تورم شديد', 'تورمًا مفاجئًا وشديدًا', 'لاحظت تورماً مفاجئاً وشديداً',
-                'ضغط دم عالي', '160/100', '150/95', '140/', '145/', '155/',
-                'بدأ بشكل مفاجئ', 'منذ البارحة', 'منذ عدة ساعات'
-            ]
-            
-            # Medium-risk indicators in Arabic (score +2 each) - Enhanced for better detection
-            medium_risk_keywords = [
-                # Headache patterns
-                'صداع خفيف', 'صداع متكرر', 'عدة مرات هذا الأسبوع', 'صداع في المساء',
-                'شعرتُ بصداع', 'بدأ يتكرر أكثر من المعتاد',
-                # Gastrointestinal 
-                'قيء', 'غثيان', 'غثيان شديد',
-                # Swelling and edema
-                'تورم خفيف', 'بعض التورم', 'لاحظت بعض التورم', 'تورم في قدميّ',
-                'تورم بنهاية اليوم', 'يتحسن عند الراحة أو رفع الساقين',
-                # Fetal movement concerns
-                'حركة قليلة', 'أقل من المعتاد', 'كانت أقل من المعتاد', 'حركة الجنين أقل',
-                'قلة حركة الجنين', 'تحسنت قليلاً بعد أن تناولت وجبة',
-                # Discharge patterns
-                'إفرازات مهبلية', 'بلون وردي خفيف', 'كمية صغيرة', 'إفرازات وردية فاتحة',
-                'لاحظتُ كمية صغيرة من الإفرازات', 'استمرت لبضع ساعات ثم توقفت',
-                # General symptoms
-                'دوخة', 'تعب شديد', 'ألم خفيف',
-                # Blood pressure concerns
-                '138/89', '138/88', '138', 'قريب من الحد الأعلى', 'متابعة مستمرة',
-                'طلبت مني مراقبته', 'قالت إنه قريب من الحد الأعلى',
-                # Improving symptoms (still concerning if recurring)
-                'يتحسن مع الراحة', 'يزول بعد الراحة', 'يتحسن عند الراحة',
-                'وعادةً ما يزول', 'تحسنت قليلاً', 'يتحسن عند'
-            ]
-            
-            # Low-risk indicators in Arabic (score +1 each)
-            low_risk_keywords = [
-                'غثيان خفيف', 'تعب', 'ألم في الظهر', 'إمساك',
-                'حساسية الثدي', 'تبول متكرر', 'طبيعي', 'عادي',
-                'لا يؤثر على الرؤية', 'ولم يكن هناك ألم', 'تحسنت قليلاً'
-            ]
-        else:
-            # High-risk indicators in English (score +3 each)
-            high_risk_keywords = [
-                'heavy bleeding', 'severe bleeding', 'heavy vaginal bleeding',
-                'severe pain', 'severe abdominal pain', 'severe contractions',
-                'no fetal movement', 'no movement felt',
-                'blurry vision', 'vision is blurry', 'vision becomes blurry', 'vision problems', 'my vision is blurry',
-                'severe headache', 'persistent headache', 'headache that won\'t go away', 'severe headache that won\'t go away',
-                'fever', 'difficulty breathing', 'chest pain',
-                'unconscious', 'fainting', 'severe dizziness',
-                'sudden swelling', 'severe swelling', 'sudden and severe swelling', 'feet are swollen',
-                'high blood pressure', '160/', '150/', '140/', '145/', '155/',
-                'started suddenly', 'severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side',
-                'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side'
-            ]
-            
-            # Medium-risk indicators in English (score +2 each)
-            medium_risk_keywords = [
-                'recurring headache', 'persistent headache', 'headaches that won\'t go away',
-                'persistent vomiting', 'vomiting more than 3 times', 'severe nausea',
-                'moderate swelling', 'swelling that doesn\'t improve', 'sudden swelling',
-                'decreased fetal movement', 'less movement than usual', 'concerning movement',
-                'unusual discharge', 'pink discharge', 'bloody discharge',
-                'persistent dizziness', 'severe dizziness', 'fainting spells',
-                'elevated blood pressure', '135/', '138/', 'close to upper limit',
-                'gestational diabetes symptoms', 'excessive thirst'
-            ]
-            
-            # Low-risk indicators in English (score +1 each)
-            low_risk_keywords = [
-                'mild nausea', 'mild headache', 'occasional headache', 'mild back pain',
-                'normal fatigue', 'tired', 'back pain', 'constipation', 'breast tenderness', 
-                'frequent urination', 'normal', 'fine', 'bit nauseous', 'feel a bit',
-                'mild swelling', 'some swelling', 'swelling at end of day',
-                'nausea', 'headache', 'dizzy', 'mild pain'
-            ]
+        # Combine all responses for analysis
+        combined_text = ""
+        for response in responses:
+            answer = response.get("answer", "").lower()
+            combined_text += " " + answer
         
-        # Check high-risk first and exclude if found
-        high_risk_found = False
-        for keyword in high_risk_keywords:
-            if keyword in combined_text:
+        # Check for high-risk keywords
+        for keyword in self.risk_keywords["high"]:
+            if keyword.lower() in combined_text:
                 risk_score += 3
-                risk_factors.append(keyword)
-                high_risk_found = True
-                if language == 'ar':
-                    print(f"Found high-risk Arabic keyword: {keyword}")
+                if language == "ar":
+                    risk_factors.append(f"عرض عالي الخطورة: {keyword}")
+                else:
+                    risk_factors.append(f"High-risk symptom: {keyword}")
         
-        # Check medium-risk symptoms (allow even if high-risk found for comprehensive scoring)
-        medium_risk_found = False
-        for keyword in medium_risk_keywords:
-            if keyword in combined_text:
+        # Check for medium-risk keywords
+        for keyword in self.risk_keywords["medium"]:
+            if keyword.lower() in combined_text:
                 risk_score += 2
-                risk_factors.append(keyword)
-                medium_risk_found = True
-                if language == 'ar':
-                    print(f"Found medium-risk Arabic keyword: {keyword}")
-                elif language == 'en':
-                    print(f"Found medium-risk English keyword: {keyword}")
+                if language == "ar":
+                    risk_factors.append(f"عرض متوسط الخطورة: {keyword}")
+                else:
+                    risk_factors.append(f"Medium-risk symptom: {keyword}")
         
-        # Add low-risk factors only if no high or medium risk found
-        if not high_risk_found and not medium_risk_found:
-            for keyword in low_risk_keywords:
-                if keyword in combined_text and keyword not in ' '.join(risk_factors):
-                    risk_score += 1
-                    risk_factors.append(keyword)
-                    print(f"Found low-risk keyword: {keyword}")
+        # Check for low-risk keywords
+        for keyword in self.risk_keywords["low"]:
+            if keyword.lower() in combined_text:
+                risk_score += 1
+                if language == "ar":
+                    risk_factors.append(f"عرض منخفض الخطورة: {keyword}")
+                else:
+                    risk_factors.append(f"Low-risk symptom: {keyword}")
         
-        # Enhanced risk level determination with specific condition checks
-        
-        # Check for high-risk combinations first
-        preeclampsia_signs = any(keyword in combined_text for keyword in ['severe headache', 'blurry vision', 'vision is blurry', 'تصبح الرؤية ضبابية', 'رؤية ضبابية', 'swollen', 'تورم']) and \
-                           any(keyword in combined_text for keyword in ['140/', '130/', '135/', '145/', '150/', '160/', 'high blood pressure', 'ضغط دم عالي'])
-        
-        # Ectopic pregnancy detection (critical in early pregnancy)
-        ectopic_signs = (any(keyword in combined_text for keyword in ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side', 'ألم شديد في البطن', 'ألم في جانب واحد']) and 
-                        any(keyword in combined_text for keyword in ['dizzy', 'feel dizzy', 'dizziness', 'دوخة', 'أشعر بدوخة'])) or \
-                       (any(keyword in combined_text for keyword in ['severe abdominal pain', 'severe pain', 'ألم شديد']) and 
-                        any(keyword in combined_text for keyword in ['week 7', 'week 6', 'week 8', 'early pregnancy', 'الأسبوع 7', 'الأسبوع 6', 'الأسبوع 8']))
-        
-        severe_symptoms = any(keyword in combined_text for keyword in ['severe headache', 'severe abdominal pain', 'blurry vision', 'vision is blurry', 'صداع شديد', 'ألم شديد', 'رؤية ضبابية'])
-        
-        high_bp_with_symptoms = any(keyword in combined_text for keyword in ['140/', '145/', '150/', '160/', 'high blood pressure', 'ضغط دم عالي']) and \
-                              any(keyword in combined_text for keyword in ['dizzy', 'dizziness', 'severe', 'pain', 'headache', 'دوخة', 'صداع', 'ألم'])
-        
-        # Debug: Print risk calculation details
-        print(f"=== RISK ASSESSMENT DEBUG ===")
-        print(f"Combined text: {combined_text}")
-        print(f"High risk found: {high_risk_found}")
-        print(f"Final risk score: {risk_score}")
-        print(f"Risk factors found: {risk_factors}")
-        print(f"Ectopic signs detected: {ectopic_signs}")
-        print(f"Preeclampsia signs detected: {preeclampsia_signs}")
-        print(f"Severe symptoms detected: {severe_symptoms}")
-        print(f"High BP with symptoms: {high_bp_with_symptoms}")
-        print(f"=== END DEBUG ===")
-        
-        # Clear and logical risk level determination
-        # Priority 1: Critical emergency conditions
-        if ectopic_signs or preeclampsia_signs or severe_symptoms or high_bp_with_symptoms:
-            risk_level = 'High'
-            print(f"HIGH RISK - Critical condition detected")
-        
-        # Priority 2: High-risk keywords found
-        elif high_risk_found:
-            risk_level = 'High'
-            print(f"HIGH RISK - High-risk keywords detected: {[kw for kw in risk_factors if any(hr in kw for hr in high_risk_keywords)]}")
-        
-        # Priority 3: Medium-risk assessment
-        elif medium_risk_found:
-            if risk_score >= 4:  # Multiple medium-risk factors
-                risk_level = 'Medium'
-                print(f"MEDIUM RISK - Multiple factors, score: {risk_score}")
-            elif risk_score >= 2:  # Some medium-risk factors
-                risk_level = 'Medium'
-                print(f"MEDIUM RISK - Medium factors detected, score: {risk_score}")
+        # Determine risk level
+        if risk_score >= 6:
+            risk_level = "عالي" if language == "ar" else "High"
+            if language == "ar":
+                recommendations = ["استشر طبيبك فوراً", "اذهب إلى المستشفى"]
             else:
-                risk_level = 'Low'
-                print(f"LOW RISK - Mild symptoms, score: {risk_score}")
-        
-        # Priority 4: Low-risk or normal pregnancy symptoms
+                recommendations = ["Consult your doctor immediately", "Go to hospital"]
+        elif risk_score >= 3:
+            risk_level = "متوسط" if language == "ar" else "Medium"
+            if language == "ar":
+                recommendations = ["اتصل بطبيبك", "راقب الأعراض"]
+            else:
+                recommendations = ["Contact your doctor", "Monitor symptoms"]
         else:
-            risk_level = 'Low'
-            print(f"LOW RISK - Normal pregnancy symptoms or no significant concerns, score: {risk_score}")
-        
-        # Get contextual recommendations based on specific symptoms
-        contextual_assessment = self._get_contextual_assessment(combined_text, risk_level, language)
+            risk_level = "منخفض" if language == "ar" else "Low"
+            if language == "ar":
+                recommendations = ["متابعة روتينية", "حافظ على العادات الصحية"]
+            else:
+                recommendations = ["Routine follow-up", "Maintain healthy habits"]
         
         return {
-            'risk_level': risk_level,
-            'risk_score': risk_score,
-            'risk_factors': risk_factors,
-            'explanation': contextual_assessment['explanation'],
-            'recommendations': contextual_assessment['recommendations'],
-            'urgent_care_needed': contextual_assessment['urgent_care_needed'],
-            'condition_detected': contextual_assessment.get('condition_detected', None)
+            "risk_level": risk_level,
+            "risk_score": min(risk_score, 10),  # Cap at 10
+            "reasons": risk_factors[:3],  # Max 3 reasons
+            "recommendations": recommendations
         }
-    
-    def check_emergency_symptoms(self, responses: List[str]) -> bool:
-        """Check if responses contain emergency symptoms requiring immediate care"""
-        
-        emergency_keywords = [
-            'heavy bleeding', 'severe pain', 'no fetal movement', 'seizure',
-            'loss of consciousness', 'difficulty breathing', 'chest pain',
-            'severe headache with vision changes'
-        ]
-        
-        combined_text = ' '.join(responses).lower()
-        
-        return any(keyword in combined_text for keyword in emergency_keywords)
-    
-    def analyze_symptom_patterns(self, responses: List[str]) -> Dict[str, Any]:
-        """Analyze symptom patterns for detailed assessment"""
-        
-        patterns = {
-            'preeclampsia_indicators': 0,
-            'preterm_labor_indicators': 0,
-            'gestational_diabetes_indicators': 0,
-            'infection_indicators': 0
-        }
-        
-        combined_text = ' '.join(responses).lower()
-        
-        # Preeclampsia pattern
-        preeclampsia_keywords = ['headache', 'vision', 'swelling', 'blood pressure']
-        patterns['preeclampsia_indicators'] = sum(1 for keyword in preeclampsia_keywords if keyword in combined_text)
-        
-        # Preterm labor pattern
-        preterm_keywords = ['contractions', 'pressure', 'cramping', 'back pain']
-        patterns['preterm_labor_indicators'] = sum(1 for keyword in preterm_keywords if keyword in combined_text)
-        
-        # Gestational diabetes pattern
-        diabetes_keywords = ['thirst', 'fatigue', 'urination', 'blurred vision']
-        patterns['gestational_diabetes_indicators'] = sum(1 for keyword in diabetes_keywords if keyword in combined_text)
-        
-        # Infection pattern
-        infection_keywords = ['fever', 'discharge', 'burning', 'odor']
-        patterns['infection_indicators'] = sum(1 for keyword in infection_keywords if keyword in combined_text)
-        
-        return patterns
-    
-    def _get_contextual_assessment(self, combined_text: str, risk_level: str, language: str) -> Dict[str, Any]:
-        """Provide contextual assessment based on specific symptoms mentioned"""
-        
-        # Specific condition detection patterns
-        conditions = {
-            'preeclampsia': {
-                'patterns': ['severe headache', 'blurry vision', 'vision is blurry', 'swollen', '140/', '130/', '135/'],
-                'en': {
-                    'explanation': 'Classic symptoms of preeclampsia, a serious pregnancy complication.',
-                    'recommendations': '🔴 High Risk - Immediate visit to the ER or OB emergency care.',
-                    'urgent_care_needed': True
-                },
-                'ar': {
-                    'explanation': 'أعراض كلاسيكية لتسمم الحمل، وهو مضاعفة خطيرة في الحمل.',
-                    'recommendations': '🔴 مخاطر عالية - زيارة فورية لغرفة الطوارئ أو طوارئ النساء والولادة.',
-                    'urgent_care_needed': True
-                }
-            },
-            'hyperemesis': {
-                'patterns': ['vomiting', 'three times', 'dehydrated', 'قيء', 'ثلاث مرات', 'جفاف'],
-                'en': {
-                    'explanation': 'Suggests possible hyperemesis gravidarum, which may require medical attention.',
-                    'recommendations': '🟡 Medium Risk - Recommend contacting a doctor within 24 hours.',
-                    'urgent_care_needed': False
-                },
-                'ar': {
-                    'explanation': 'تشير إلى احتمالية القيء المفرط في الحمل، والذي قد يتطلب رعاية طبية.',
-                    'recommendations': '🟡 مخاطر متوسطة - يُنصح بالاتصال بالطبيب خلال 24 ساعة.',
-                    'urgent_care_needed': False
-                }
-            },
-            'ectopic': {
-                'patterns': ['severe abdominal pain on one side', 'abdominal pain on one side', 'pain on one side', 'severe abdominal pain on the side', 'abdominal pain on the side', 'pain on the side', 'feel dizzy', 'week 7', 'week 6', 'week 8', 'الأسبوع 7', 'ألم شديد في البطن', 'جانب واحد', 'دوخة'],
-                'en': {
-                    'explanation': 'Could indicate ectopic pregnancy, especially dangerous in early weeks (4-12). Combination of one-sided severe abdominal pain and dizziness requires immediate evaluation.',
-                    'recommendations': '🚨 High Risk - Emergency care required immediately. Go to ER now.',
-                    'urgent_care_needed': True
-                },
-                'ar': {
-                    'explanation': 'قد تشير إلى حمل خارج الرحم، خطير جداً في الأسابيع المبكرة (4-12). مزيج من الألم الشديد في جانب واحد والدوخة يتطلب تقييماً فورياً.',
-                    'recommendations': '🚨 مخاطر عالية - رعاية طوارئ مطلوبة فوراً. اذهب للطوارئ الآن.',
-                    'urgent_care_needed': True
-                }
-            }
-        }
-        
-        # Check for specific conditions
-        for condition_name, condition_data in conditions.items():
-            pattern_matches = sum(1 for pattern in condition_data['patterns'] if pattern in combined_text.lower())
-            if pattern_matches >= 2:  # At least 2 patterns match
-                return {
-                    'condition_detected': condition_name,
-                    **condition_data[language]
-                }
-        
-        # Default recommendations based on risk level
-        default_recommendations = self.kb.get_recommendations(risk_level, language)
-        return default_recommendations
-    
-    def get_detailed_assessment(self, responses: List[str], language: str = 'en') -> Dict[str, Any]:
-        """Provide detailed risk assessment with pattern analysis"""
-        
-        basic_assessment = self.assess_risk(responses, language)
-        patterns = self.analyze_symptom_patterns(responses)
-        emergency_check = self.check_emergency_symptoms(responses)
-        
-        # Enhance assessment with pattern analysis
-        detailed_assessment = basic_assessment.copy()
-        detailed_assessment['symptom_patterns'] = patterns
-        detailed_assessment['emergency_symptoms_detected'] = emergency_check
-        
-        # Adjust risk level if emergency symptoms detected
-        if emergency_check:
-            detailed_assessment['risk_level'] = 'High'
-            detailed_assessment['urgent_care_needed'] = True
-        
-        return detailed_assessment
